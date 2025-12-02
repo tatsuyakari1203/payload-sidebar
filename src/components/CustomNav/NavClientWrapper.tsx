@@ -1,7 +1,7 @@
 'use client'
 
 import { useNav } from '@payloadcms/ui'
-import React, { useState, useCallback } from 'react'
+import React from 'react'
 
 import { StyleInjector } from './StyleInjector'
 import { NavContent } from './NavContent'
@@ -48,11 +48,6 @@ export const NavClientWrapper: React.FC<NavClientWrapperProps> = (props) => {
   } = props
 
   const { hydrated, navOpen, navRef, shouldAnimate } = useNav()
-  const [stylesReady, setStylesReady] = useState(false)
-
-  const handleStylesReady = useCallback(() => {
-    setStylesReady(true)
-  }, [])
 
   // Build full config with icons (which can't be serialized from server)
   const fullConfig: NavConfigContextValue = {
@@ -65,14 +60,13 @@ export const NavClientWrapper: React.FC<NavClientWrapperProps> = (props) => {
 
   return (
     <NavConfigProvider config={fullConfig}>
-      <StyleInjector onReady={handleStylesReady} />
+      <StyleInjector />
       <aside
         className={[
           classPrefix,
           navOpen && `${classPrefix}--nav-open`,
           shouldAnimate && `${classPrefix}--nav-animate`,
           hydrated && `${classPrefix}--nav-hydrated`,
-          stylesReady && `${classPrefix}--styles-ready`,
         ]
           .filter(Boolean)
           .join(' ')}
