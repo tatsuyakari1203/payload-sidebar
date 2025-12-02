@@ -522,6 +522,14 @@ MIT © [Kari](https://github.com/tatsuyakari1203)
 
 ## Changelog
 
+### 1.1.0
+
+- Refactored for proper server/client component bundling
+- Split RSC and client components into separate entry points
+- Plugin auto-sets Nav component path (no wrapper file needed)
+- No more need for `transpilePackages` in consuming projects
+- Comprehensive documentation with examples
+
 ### 1.0.0
 
 - Initial release
