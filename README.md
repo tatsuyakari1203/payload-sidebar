@@ -242,71 +242,375 @@ export async function POST(request: Request) {
 
 ## Adding Badges
 
-Badges show notification counts on nav items. Use the `SidebarBadgeProvider`:
+Badges display notification counts, statistics, or status indicators on navigation items. They support multiple colors and are fully customizable.
+
+### Basic Setup
+
+1. **Create a Badge Provider** that wraps your admin panel:
 
 ```tsx
-// src/providers/BadgeProvider.tsx
+// src/components/NavBadgeProvider.tsx
 'use client'
 
+import React from 'react'
 import { SidebarBadgeProvider } from 'payload-sidebar-plugin/components'
 
-export function BadgeProvider({ children }: { children: React.ReactNode }) {
-  // Fetch your notification counts however you like
-  const unreadMessages = 5
-  const pendingReviews = 3
+export function NavBadgeProvider({ children }: { children: React.ReactNode }) {
+  const badges = {
+    // Key must match collection/global slug exactly
+    posts: { count: 5, color: 'blue' as const },
+    comments: { count: 12, color: 'red' as const },
+  }
 
-  return (
-    <SidebarBadgeProvider
-      badges={{
-        messages: { count: unreadMessages, color: 'red' },
-        reviews: { count: pendingReviews, color: 'yellow' },
-        posts: { count: 12, color: 'blue' },
-      }}
-    >
-      {children}
-    </SidebarBadgeProvider>
-  )
+  return <SidebarBadgeProvider badges={badges}>{children}</SidebarBadgeProvider>
 }
 ```
 
-Wrap your admin layout with the provider:
+2. **Register the provider** in your Payload config:
+
+```typescript
+// payload.config.ts
+export default buildConfig({
+  admin: {
+    components: {
+      providers: ['@/components/NavBadgeProvider'],
+    },
+  },
+  // ...
+})
+```
+
+3. **Generate import map**:
+
+```bash
+npx payload generate:importmap
+```
+
+---
+
+### Use Cases
+
+#### 1. Unread Notifications (Real-time)
+
+Show unread chat messages or comments with Pusher/WebSocket:
 
 ```tsx
-// src/app/(payload)/admin/layout.tsx
-import { BadgeProvider } from '@/providers/BadgeProvider'
+'use client'
 
-export default function AdminLayout({ children }) {
-  return <BadgeProvider>{children}</BadgeProvider>
+import React, { useEffect, useState } from 'react'
+import { SidebarBadgeProvider } from 'payload-sidebar-plugin/components'
+import Pusher from 'pusher-js'
+
+export function NavBadgeProvider({ children }: { children: React.ReactNode }) {
+  const [unreadChats, setUnreadChats] = useState(0)
+  const [unreadComments, setUnreadComments] = useState(0)
+
+  useEffect(() => {
+    // Connect to Pusher for real-time updates
+    const pusher = new Pusher('your-key', { cluster: 'mt1' })
+    const channel = pusher.subscribe('admin-notifications')
+
+    channel.bind('new-chat', () => setUnreadChats(prev => prev + 1))
+    channel.bind('new-comment', () => setUnreadComments(prev => prev + 1))
+
+    return () => pusher.disconnect()
+  }, [])
+
+  const badges = {
+    'chat-dashboard': unreadChats > 0 ? { count: unreadChats, color: 'red' as const } : undefined,
+    'comments-dashboard':
+      unreadComments > 0 ? { count: unreadComments, color: 'orange' as const } : undefined,
+  }
+
+  // Filter out undefined values
+  const filteredBadges = Object.fromEntries(
+    Object.entries(badges).filter(([, v]) => v !== undefined)
+  ) as Record<string, { count: number; color: 'red' | 'orange' }>
+
+  return <SidebarBadgeProvider badges={filteredBadges}>{children}</SidebarBadgeProvider>
 }
 ```
+
+#### 2. Collection Document Counts
+
+Display total documents in each collection:
+
+```tsx
+'use client'
+
+import React, { useEffect, useState } from 'react'
+import { SidebarBadgeProvider } from 'payload-sidebar-plugin/components'
+
+export function NavBadgeProvider({ children }: { children: React.ReactNode }) {
+  const [counts, setCounts] = useState({
+    posts: 0,
+    pages: 0,
+    media: 0,
+    users: 0,
+  })
+
+  useEffect(() => {
+    const fetchCounts = async () => {
+      const [posts, pages, media, users] = await Promise.all([
+        fetch('/api/posts?limit=0').then(r => r.json()),
+        fetch('/api/pages?limit=0').then(r => r.json()),
+        fetch('/api/media?limit=0').then(r => r.json()),
+        fetch('/api/users?limit=0').then(r => r.json()),
+      ])
+
+      setCounts({
+        posts: posts.totalDocs || 0,
+        pages: pages.totalDocs || 0,
+        media: media.totalDocs || 0,
+        users: users.totalDocs || 0,
+      })
+    }
+
+    fetchCounts()
+    // Refresh every 30 seconds
+    const interval = setInterval(fetchCounts, 30000)
+    return () => clearInterval(interval)
+  }, [])
+
+  const badges = {
+    posts: counts.posts > 0 ? { count: counts.posts, color: 'green' as const } : undefined,
+    pages: counts.pages > 0 ? { count: counts.pages, color: 'blue' as const } : undefined,
+    media: counts.media > 0 ? { count: counts.media, color: 'gray' as const } : undefined,
+    users: counts.users > 0 ? { count: counts.users, color: 'blue' as const } : undefined,
+  }
+
+  const filteredBadges = Object.fromEntries(
+    Object.entries(badges).filter(([, v]) => v !== undefined)
+  ) as Record<string, { count: number; color: 'green' | 'blue' | 'gray' }>
+
+  return <SidebarBadgeProvider badges={filteredBadges}>{children}</SidebarBadgeProvider>
+}
+```
+
+#### 3. Pending Review / Draft Status
+
+Highlight items needing attention:
+
+```tsx
+'use client'
+
+import React, { useEffect, useState } from 'react'
+import { SidebarBadgeProvider } from 'payload-sidebar-plugin/components'
+
+export function NavBadgeProvider({ children }: { children: React.ReactNode }) {
+  const [pending, setPending] = useState({
+    drafts: 0,
+    pendingComments: 0,
+    pendingOrders: 0,
+  })
+
+  useEffect(() => {
+    const fetchPending = async () => {
+      const [drafts, comments, orders] = await Promise.all([
+        fetch('/api/posts?where[_status][equals]=draft&limit=0').then(r => r.json()),
+        fetch('/api/comments?where[status][equals]=pending&limit=0').then(r => r.json()),
+        fetch('/api/orders?where[status][equals]=pending&limit=0').then(r => r.json()),
+      ])
+
+      setPending({
+        drafts: drafts.totalDocs || 0,
+        pendingComments: comments.totalDocs || 0,
+        pendingOrders: orders.totalDocs || 0,
+      })
+    }
+
+    fetchPending()
+    const interval = setInterval(fetchPending, 60000) // Refresh every minute
+    return () => clearInterval(interval)
+  }, [])
+
+  const badges = {
+    posts: pending.drafts > 0 ? { count: pending.drafts, color: 'yellow' as const } : undefined,
+    comments:
+      pending.pendingComments > 0
+        ? { count: pending.pendingComments, color: 'orange' as const }
+        : undefined,
+    orders:
+      pending.pendingOrders > 0
+        ? { count: pending.pendingOrders, color: 'red' as const }
+        : undefined,
+  }
+
+  const filteredBadges = Object.fromEntries(
+    Object.entries(badges).filter(([, v]) => v !== undefined)
+  ) as Record<string, { count: number; color: 'yellow' | 'orange' | 'red' }>
+
+  return <SidebarBadgeProvider badges={filteredBadges}>{children}</SidebarBadgeProvider>
+}
+```
+
+#### 4. Combined: Notifications + Counts
+
+Full example combining multiple data sources:
+
+```tsx
+'use client'
+
+import React, { useEffect, useState } from 'react'
+import { SidebarBadgeProvider } from 'payload-sidebar-plugin/components'
+import { useNotifications } from '@/providers/NotificationProvider' // Your notification hook
+
+type BadgeColor = 'red' | 'yellow' | 'blue' | 'green' | 'orange' | 'gray'
+
+interface BadgeConfig {
+  count: number
+  color: BadgeColor
+}
+
+export function NavBadgeProvider({ children }: { children: React.ReactNode }) {
+  // Real-time notifications from your provider
+  const { unreadChats, unreadComments } = useNotifications()
+
+  // Static counts
+  const [counts, setCounts] = useState({
+    posts: 0,
+    pages: 0,
+    media: 0,
+    drafts: 0,
+  })
+
+  useEffect(() => {
+    const fetchCounts = async () => {
+      try {
+        const [posts, pages, media, drafts] = await Promise.all([
+          fetch('/api/posts?limit=0').then(r => r.json()),
+          fetch('/api/pages?limit=0').then(r => r.json()),
+          fetch('/api/media?limit=0').then(r => r.json()),
+          fetch('/api/posts?where[_status][equals]=draft&limit=0').then(r => r.json()),
+        ])
+
+        setCounts({
+          posts: posts.totalDocs || 0,
+          pages: pages.totalDocs || 0,
+          media: media.totalDocs || 0,
+          drafts: drafts.totalDocs || 0,
+        })
+      } catch (error) {
+        console.error('Failed to fetch badge counts:', error)
+      }
+    }
+
+    fetchCounts()
+    const interval = setInterval(fetchCounts, 30000)
+    return () => clearInterval(interval)
+  }, [])
+
+  // Build badges object
+  const badges: Record<string, BadgeConfig | undefined> = {
+    // Urgent notifications (red/orange)
+    'chat-dashboard': unreadChats > 0 ? { count: unreadChats, color: 'red' } : undefined,
+    'comments-dashboard':
+      unreadComments > 0 ? { count: unreadComments, color: 'orange' } : undefined,
+
+    // Pending items (yellow)
+    drafts: counts.drafts > 0 ? { count: counts.drafts, color: 'yellow' } : undefined,
+
+    // Informational counts (blue/green/gray)
+    posts: counts.posts > 0 ? { count: counts.posts, color: 'green' } : undefined,
+    pages: counts.pages > 0 ? { count: counts.pages, color: 'blue' } : undefined,
+    media: counts.media > 0 ? { count: counts.media, color: 'gray' } : undefined,
+  }
+
+  // Remove undefined entries
+  const filteredBadges = Object.fromEntries(
+    Object.entries(badges).filter(([, v]) => v !== undefined)
+  ) as Record<string, BadgeConfig>
+
+  return <SidebarBadgeProvider badges={filteredBadges}>{children}</SidebarBadgeProvider>
+}
+```
+
+---
+
+### Badge API Reference
+
+#### SidebarBadgeProvider Props
+
+```typescript
+interface SidebarBadgeProviderProps {
+  children: React.ReactNode
+  badges: Record<string, BadgeConfig>
+}
+
+interface BadgeConfig {
+  count: number // Number to display (0 = hidden)
+  color: 'red' | 'yellow' | 'blue' | 'green' | 'orange' | 'gray'
+}
+```
+
+#### useBadge Hook
+
+Get badge for a specific slug in your custom components:
+
+```tsx
+import { useBadge } from 'payload-sidebar-plugin/hooks'
+
+function MyComponent() {
+  const badge = useBadge('posts') // Returns { count: 5, color: 'blue' } or null
+
+  if (badge) {
+    return <span className={`badge badge--${badge.color}`}>{badge.count}</span>
+  }
+  return null
+}
+```
+
+---
 
 ### Available Badge Colors
 
-| Color    | CSS Variable           | Use Case                  |
-| -------- | ---------------------- | ------------------------- |
-| `red`    | `--badge-color-red`    | Urgent, unread, errors    |
-| `yellow` | `--badge-color-yellow` | Warnings, drafts, pending |
-| `blue`   | `--badge-color-blue`   | Info, notifications       |
-| `green`  | `--badge-color-green`  | Success, approved         |
-| `orange` | `--badge-color-orange` | In-progress               |
-| `gray`   | `--badge-color-gray`   | Neutral, archived         |
+| Color    | Use Case                         | Example                       |
+| -------- | -------------------------------- | ----------------------------- |
+| `red`    | Urgent, unread, errors           | Unread messages, failed jobs  |
+| `orange` | Warnings, needs attention        | Pending comments, expiring    |
+| `yellow` | Drafts, pending review           | Draft posts, awaiting publish |
+| `blue`   | Informational, neutral counts    | Total pages, active users     |
+| `green`  | Success, published, approved     | Published posts, completed    |
+| `gray`   | Archived, inactive, low priority | Media count, old items        |
 
-### Custom Badge Colors
+---
 
-Override default colors via CSS variables:
+### Customizing Badge Colors
+
+Override default colors via plugin options:
 
 ```typescript
 payloadSidebar({
   cssVariables: {
-    '--badge-color-red': '#dc2626',
-    '--badge-color-blue': '#2563eb',
-    '--badge-color-green': '#16a34a',
-    '--badge-color-yellow': '#ca8a04',
-    '--badge-color-orange': '#ea580c',
-    '--badge-color-gray': '#6b7280',
+    // Background colors
+    '--badge-red-bg': '#fef2f2',
+    '--badge-red-text': '#dc2626',
+    '--badge-yellow-bg': '#fefce8',
+    '--badge-yellow-text': '#ca8a04',
+    '--badge-blue-bg': '#eff6ff',
+    '--badge-blue-text': '#2563eb',
+    '--badge-green-bg': '#f0fdf4',
+    '--badge-green-text': '#16a34a',
+    '--badge-orange-bg': '#fff7ed',
+    '--badge-orange-text': '#ea580c',
+    '--badge-gray-bg': '#f9fafb',
+    '--badge-gray-text': '#6b7280',
   },
 })
 ```
+
+Or via CSS:
+
+```css
+/* In your admin.css or global styles */
+:root {
+  --badge-red-bg: #fee2e2;
+  --badge-red-text: #b91c1c;
+  /* ... other colors */
+}
+```
+
+````
 
 ## Styling
 
@@ -333,7 +637,7 @@ The plugin uses BEM-style CSS classes with a configurable prefix (default: `nav`
 .nav__controls {
   /* Bottom controls (logout, etc) */
 }
-```
+````
 
 ### Pinned Section
 
@@ -521,6 +825,26 @@ pnpm typecheck
 MIT © [Kari](https://github.com/tatsuyakari1203)
 
 ## Changelog
+
+### 1.1.4
+
+- Fixed badge blur/fuzzy rendering with crisp CSS properties
+- Removed pulse animation that caused visual artifacts
+- Added GPU acceleration for sharp text rendering
+
+### 1.1.3
+
+- Fixed React Hooks order error in PinnedSection
+- Extracted PinnedItemLink component for proper hook usage
+
+### 1.1.2
+
+- Fixed SSR "document is not defined" error
+- Added StyleInjector component with useEffect for client-side style injection
+
+### 1.1.1
+
+- Fixed SCSS styles not loading (changed to style injection)
 
 ### 1.1.0
 
