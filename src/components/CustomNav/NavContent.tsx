@@ -32,14 +32,22 @@ export const NavContent: React.FC<NavContentProps> = ({ groups, adminRoute, navP
         for (const group of groups) {
           const entity = group.entities.find((e) => e.slug === item.slug && e.type === item.type)
           if (entity) {
-            const href =
-              item.type === 'collection'
-                ? formatAdminURL({ adminRoute, path: `/collections/${item.slug}` })
-                : formatAdminURL({ adminRoute, path: `/globals/${item.slug}` })
+            // For custom links, use the stored href; for collections/globals, build the URL
+            let href: string
+            if (item.type === 'custom' && entity.href) {
+              href = entity.href
+            } else if (item.type === 'collection') {
+              href = formatAdminURL({ adminRoute, path: `/collections/${item.slug}` })
+            } else {
+              href = formatAdminURL({ adminRoute, path: `/globals/${item.slug}` })
+            }
+
             return {
               ...item,
               label: entity.label,
               href,
+              external: entity.external,
+              icon: entity.icon,
             }
           }
         }
@@ -47,10 +55,12 @@ export const NavContent: React.FC<NavContentProps> = ({ groups, adminRoute, navP
       })
       .filter(Boolean) as Array<{
       slug: string
-      type: 'collection' | 'global'
+      type: 'collection' | 'global' | 'custom'
       order: number
       label: string
       href: string
+      external?: boolean
+      icon?: string | React.ComponentType<{ size?: number; className?: string }>
     }>
   }, [pinnedItems, groups, adminRoute])
 
@@ -69,14 +79,27 @@ export const NavContent: React.FC<NavContentProps> = ({ groups, adminRoute, navP
       {/* Sorted Navigation Groups */}
       {groups.map(({ entities, label }, groupIndex) => (
         <NavGroup isOpen={navPreferences?.groups?.[label]?.open} key={groupIndex} label={label}>
-          {entities.map(({ slug, type, label: entityLabel }, entityIndex) => {
-            const href =
-              type === 'collection'
-                ? formatAdminURL({ adminRoute, path: `/collections/${slug}` })
-                : formatAdminURL({ adminRoute, path: `/globals/${slug}` })
+          {entities.map((entity, entityIndex) => {
+            const { slug, type, label: entityLabel, href: customHref, external, icon, pinnable } = entity
 
-            const id = type === 'collection' ? `nav-${slug}` : `nav-global-${slug}`
+            // Build href based on type
+            let href: string
+            if (type === 'custom' && customHref) {
+              href = customHref
+            } else if (type === 'collection') {
+              href = formatAdminURL({ adminRoute, path: `/collections/${slug}` })
+            } else {
+              href = formatAdminURL({ adminRoute, path: `/globals/${slug}` })
+            }
+
+            const id = type === 'collection'
+              ? `nav-${slug}`
+              : type === 'global'
+                ? `nav-global-${slug}`
+                : `nav-custom-${slug}`
+
             const pinned = isPinned(slug, type)
+            const canPin = enablePinning && (pinnable !== false)
 
             return (
               <NavLink
@@ -86,7 +109,9 @@ export const NavContent: React.FC<NavContentProps> = ({ groups, adminRoute, navP
                 slug={slug}
                 type={type}
                 isPinned={pinned}
-                onTogglePin={enablePinning ? () => togglePin(slug, type) : undefined}
+                onTogglePin={canPin ? () => togglePin(slug, type) : undefined}
+                external={external}
+                customIcon={icon}
               >
                 <span className={`${classPrefix}__link-label`}>{entityLabel}</span>
               </NavLink>

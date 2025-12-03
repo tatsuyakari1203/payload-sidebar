@@ -57,7 +57,7 @@ export function usePinnedNav() {
 
   // Pin an item
   const pinItem = useCallback(
-    async (slug: string, type: 'collection' | 'global') => {
+    async (slug: string, type: 'collection' | 'global' | 'custom') => {
       const newItem: PinnedItem = { slug, type, order: pinnedItems.length }
 
       // Optimistic update
@@ -160,7 +160,7 @@ export function usePinnedNav() {
 
   // Toggle pin state
   const togglePin = useCallback(
-    async (slug: string, type: 'collection' | 'global') => {
+    async (slug: string, type: 'collection' | 'global' | 'custom') => {
       if (isPinned(slug, type)) {
         await unpinItem(slug, type)
       } else {

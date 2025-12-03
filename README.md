@@ -11,6 +11,7 @@ A customizable navigation sidebar plugin for Payload CMS 3.x with sortable group
 - 📌 **Pin Items** - Pin frequently used items to the top (persisted per-user)
 - 🎨 **Custom Icons** - Use Lucide icons or your own components
 - 🔔 **Multi-color Badges** - Show notification counts with different colors
+- 🔗 **Custom Links & Groups** - Add your own navigation links and groups
 - 🌐 **i18n Support** - Works with English, Vietnamese, and other languages
 - ⚡ **Zero Config** - Works out of the box, just add to plugins
 
@@ -86,10 +87,153 @@ payloadSidebar({
 | Option          | Type                              | Default         | Description                                                             |
 | --------------- | --------------------------------- | --------------- | ----------------------------------------------------------------------- |
 | `groupOrder`    | `Record<string, number>`          | `{}`            | Priority map for sorting nav groups. Lower numbers appear first.        |
+| `customLinks`   | `CustomLink[]`                    | `[]`            | Add custom navigation links to the sidebar.                             |
+| `customGroups`  | `CustomGroup[]`                   | `[]`            | Define custom groups or configure existing ones.                        |
 | `enablePinning` | `boolean`                         | `true`          | Enable/disable the pin items feature.                                   |
 | `pinnedStorage` | `'preferences' \| 'localStorage'` | `'preferences'` | Where to store pinned items. `preferences` persists on server per-user. |
 | `classPrefix`   | `string`                          | `'nav'`         | CSS class prefix for styling.                                           |
 | `cssVariables`  | `Record<string, string>`          | `{}`            | Override default CSS variables.                                         |
+
+## Custom Links & Groups
+
+Add your own navigation links that aren't tied to Payload collections or globals.
+
+### Basic Usage
+
+```typescript
+import { payloadSidebar } from 'payload-sidebar-plugin'
+import { BarChart, BookOpen, ExternalLink } from 'lucide-react'
+
+payloadSidebar({
+  // Add custom links to the sidebar
+  customLinks: [
+    {
+      label: 'Analytics Dashboard',
+      href: '/admin/analytics',
+      group: 'Tools',
+      icon: 'chart', // Use icon key from defaults
+    },
+    {
+      label: 'API Documentation',
+      href: 'https://api.example.com/docs',
+      group: 'Resources',
+      external: true, // Opens in new tab
+      icon: BookOpen, // Or pass Lucide icon directly
+    },
+    {
+      label: 'Design System',
+      href: '/admin/design-system',
+      group: 'Tools',
+      order: 1, // Appears first in the group
+    },
+  ],
+
+  // Define custom groups
+  customGroups: [
+    { label: 'Tools', order: 5 },
+    { label: 'Resources', order: 99, defaultOpen: false },
+  ],
+})
+```
+
+### CustomLink Options
+
+| Option     | Type                   | Default    | Description                                         |
+| ---------- | ---------------------- | ---------- | --------------------------------------------------- |
+| `label`    | `string`               | (required) | Display label for the link                          |
+| `href`     | `string`               | (required) | URL path or full URL                                |
+| `group`    | `string`               | `'Custom'` | Group to place this link in                         |
+| `icon`     | `string \| LucideIcon` | `'link'`   | Icon key (from defaults) or Lucide icon component   |
+| `external` | `boolean`              | auto       | Opens in new tab. Auto-detected for http/https URLs |
+| `order`    | `number`               | `50`       | Position within the group (lower = higher)          |
+| `pinnable` | `boolean`              | `true`     | Whether this link can be pinned                     |
+
+### CustomGroup Options
+
+| Option        | Type      | Default    | Description                                       |
+| ------------- | --------- | ---------- | ------------------------------------------------- |
+| `label`       | `string`  | (required) | Group label (used for display and identification) |
+| `order`       | `number`  | `50`       | Sort order priority (lower = appears first)       |
+| `defaultOpen` | `boolean` | `true`     | Whether group starts expanded                     |
+
+### Available Icon Keys
+
+You can use these icon keys in the `icon` property:
+
+```typescript
+// Navigation
+'dashboard', 'link', 'external-link', 'globe'
+
+// Content
+'docs', 'documentation', 'api', 'file-code'
+
+// Tools
+'terminal', 'sparkles', 'zap', 'star'
+
+// General
+'folder', 'help', 'info', 'custom'
+```
+
+Or import and use any Lucide icon directly:
+
+```typescript
+import { Rocket, Database, Shield } from 'lucide-react'
+
+customLinks: [
+  { label: 'Launch', href: '/admin/launch', icon: Rocket },
+  { label: 'Database', href: '/admin/db', icon: Database },
+]
+```
+
+### Use Cases
+
+#### 1. Admin Custom Views
+
+Link to custom admin views you've created:
+
+```typescript
+payloadSidebar({
+  customLinks: [
+    { label: 'Analytics', href: '/admin/analytics', group: 'Dashboards', icon: 'chart' },
+    { label: 'Reports', href: '/admin/reports', group: 'Dashboards' },
+    { label: 'Import/Export', href: '/admin/import-export', group: 'Tools' },
+  ],
+  customGroups: [
+    { label: 'Dashboards', order: 1 },
+    { label: 'Tools', order: 10 },
+  ],
+})
+```
+
+#### 2. External Resources
+
+Link to documentation, APIs, or external tools:
+
+```typescript
+payloadSidebar({
+  customLinks: [
+    { label: 'API Docs', href: 'https://api.example.com/docs', group: 'Resources' },
+    { label: 'Figma Designs', href: 'https://figma.com/file/xxx', group: 'Resources' },
+    { label: 'Slack Channel', href: 'https://slack.com/xxx', group: 'Resources' },
+  ],
+  customGroups: [{ label: 'Resources', order: 99, defaultOpen: false }],
+})
+```
+
+#### 3. Mixed with Existing Groups
+
+Add custom links alongside Payload collections:
+
+```typescript
+payloadSidebar({
+  customLinks: [
+    // Add to existing "Content" group alongside posts, pages, etc.
+    { label: 'Content Calendar', href: '/admin/calendar', group: 'Content', order: 0 },
+    // Add to existing "Settings" group
+    { label: 'Integrations', href: '/admin/integrations', group: 'Settings' },
+  ],
+})
+```
 
 ## Group Ordering
 
@@ -755,6 +899,8 @@ import type {
   NavEntity,
   PinnedItem,
   BadgeConfig,
+  CustomLink,
+  CustomGroup,
 } from 'payload-sidebar-plugin'
 ```
 
@@ -825,6 +971,15 @@ pnpm typecheck
 MIT © [Kari](https://github.com/tatsuyakari1203)
 
 ## Changelog
+
+### 1.2.0
+
+- ✨ Added `customLinks` option to add custom navigation links
+- ✨ Added `customGroups` option to define custom navigation groups
+- ✨ Support for external links with automatic detection and new tab opening
+- ✨ Custom links can use icon keys or Lucide icon components
+- ✨ Custom links are pinnable by default
+- 📝 Updated documentation with comprehensive custom links examples
 
 ### 1.1.4
 

@@ -23,6 +23,7 @@ export const useNavConfig = (): NavConfigContextValue => {
       enablePinning: true,
       pinnedStorage: 'preferences',
       cssVariables: DEFAULT_BADGE_COLORS,
+      customLinks: [],
     }
   }
   return ctx

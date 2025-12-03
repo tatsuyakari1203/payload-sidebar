@@ -19,6 +19,8 @@ export type {
   IconComponent,
   NavConfigContextValue,
   BadgeContextValue,
+  CustomLink,
+  CustomGroup,
 } from './types'
 
 // Defaults (no React dependencies)

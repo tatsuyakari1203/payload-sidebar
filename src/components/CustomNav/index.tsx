@@ -13,6 +13,7 @@ import { CustomNavClient } from 'payload-sidebar-plugin/components'
 import { sortGroups } from '../../utils/sortGroups'
 import { DEFAULT_GROUP_ORDER, DEFAULT_BADGE_COLORS } from '../../defaults'
 import { getPluginOptions } from '../../plugin/index'
+import type { NavEntity, NavGroup, CustomLink, CustomGroup } from '../../types'
 
 export type CustomNavProps = {
   req?: PayloadRequest
@@ -41,6 +42,118 @@ async function getNavPrefs(
   }
 }
 
+/**
+ * Convert CustomLink to NavEntity
+ */
+function customLinkToNavEntity(link: CustomLink): NavEntity {
+  // Generate a unique slug for custom links
+  const slug = `custom-${link.label.toLowerCase().replace(/\s+/g, '-')}`
+
+  // Auto-detect external links
+  const isExternal = link.external ?? (
+    link.href.startsWith('http://') ||
+    link.href.startsWith('https://') ||
+    link.href.startsWith('//')
+  )
+
+  return {
+    slug,
+    type: 'custom',
+    label: link.label,
+    href: link.href,
+    external: isExternal,
+    icon: link.icon,
+    pinnable: link.pinnable ?? true,
+    order: link.order ?? 50,
+  }
+}
+
+/**
+ * Merge custom links into navigation groups
+ */
+function mergeCustomLinks(
+  groups: NavGroup[],
+  customLinks: CustomLink[] = [],
+  customGroups: CustomGroup[] = [],
+): NavGroup[] {
+  if (!customLinks.length && !customGroups.length) {
+    return groups
+  }
+
+  // Create a mutable copy of groups
+  const mergedGroups = groups.map(g => ({
+    ...g,
+    entities: [...g.entities],
+  }))
+
+  // Track existing group labels
+  const groupMap = new Map<string, NavGroup>()
+  mergedGroups.forEach(g => groupMap.set(g.label, g))
+
+  // Create custom groups first (if they don't exist)
+  for (const customGroup of customGroups) {
+    if (!groupMap.has(customGroup.label)) {
+      const newGroup: NavGroup = {
+        label: customGroup.label,
+        entities: [],
+      }
+      mergedGroups.push(newGroup)
+      groupMap.set(customGroup.label, newGroup)
+    }
+  }
+
+  // Add custom links to their respective groups
+  for (const link of customLinks) {
+    const groupLabel = link.group ?? 'Custom'
+    const navEntity = customLinkToNavEntity(link)
+
+    let targetGroup = groupMap.get(groupLabel)
+
+    // Create group if it doesn't exist
+    if (!targetGroup) {
+      targetGroup = {
+        label: groupLabel,
+        entities: [],
+      }
+      mergedGroups.push(targetGroup)
+      groupMap.set(groupLabel, targetGroup)
+    }
+
+    targetGroup.entities.push(navEntity)
+  }
+
+  // Sort entities within each group by order
+  for (const group of mergedGroups) {
+    group.entities.sort((a, b) => {
+      const orderA = a.order ?? 50
+      const orderB = b.order ?? 50
+      return orderA - orderB
+    })
+  }
+
+  return mergedGroups
+}
+
+/**
+ * Build group order including custom groups
+ */
+function buildGroupOrder(
+  defaultOrder: Record<string, number>,
+  pluginOrder: Record<string, number> = {},
+  customGroups: CustomGroup[] = [],
+): Record<string, number> {
+  const order = { ...defaultOrder, ...pluginOrder }
+
+  // Apply custom group orders
+  for (const group of customGroups) {
+    if (group.order !== undefined) {
+      order[group.label] = group.order
+    }
+  }
+
+  return order
+}
+
 export async function CustomNav(props: CustomNavProps): Promise<React.ReactElement | null> {
   const {
     documentSubViewType,
@@ -64,11 +177,17 @@ export async function CustomNav(props: CustomNavProps): Promise<React.ReactEleme
   }
 
   // Merge plugin options with defaults
-  const groupOrder = { ...DEFAULT_GROUP_ORDER, ...pluginOptions.groupOrder }
+  const groupOrder = buildGroupOrder(
+    DEFAULT_GROUP_ORDER,
+    pluginOptions.groupOrder,
+    pluginOptions.customGroups
+  )
   const classPrefix = pluginOptions.classPrefix ?? 'nav'
   const enablePinning = pluginOptions.enablePinning ?? true
   const pinnedStorage = pluginOptions.pinnedStorage ?? 'preferences'
   const cssVariables = { ...DEFAULT_BADGE_COLORS, ...pluginOptions.cssVariables }
+  const customLinks = pluginOptions.customLinks ?? []
+  const customGroups = pluginOptions.customGroups ?? []
 
   const {
     admin: {
@@ -105,18 +224,21 @@ export async function CustomNav(props: CustomNavProps): Promise<React.ReactEleme
     i18n,
   )
 
-  // Sort groups according to our priority - convert to serializable format
-  const sortedGroups = sortGroups(
-    groups.map((g) => ({
-      label: g.label,
-      entities: g.entities.map((e) => ({
-        slug: e.slug,
-        type: e.type === EntityType.collection ? ('collection' as const) : ('global' as const),
-        label: typeof e.label === 'string' ? e.label : getTranslation(e.label, i18n),
-      })),
+  // Convert to serializable format
+  const payloadGroups: NavGroup[] = groups.map((g) => ({
+    label: g.label,
+    entities: g.entities.map((e) => ({
+      slug: e.slug,
+      type: e.type === EntityType.collection ? ('collection' as const) : ('global' as const),
+      label: typeof e.label === 'string' ? e.label : getTranslation(e.label, i18n),
     })),
-    groupOrder,
-  )
+  }))
+
+  // Merge custom links into groups
+  const mergedGroups = mergeCustomLinks(payloadGroups, customLinks, customGroups)
+
+  // Sort groups according to our priority
+  const sortedGroups = sortGroups(mergedGroups, groupOrder)
 
   const navPreferences = await getNavPrefs(req)
 
@@ -126,6 +248,7 @@ export async function CustomNav(props: CustomNavProps): Promise<React.ReactEleme
     enablePinning,
     pinnedStorage,
     cssVariables,
+    customLinks,
   }
 
   const LogoutComponent = RenderServerComponent({

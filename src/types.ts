@@ -9,6 +9,84 @@ import type { LucideIcon } from 'lucide-react'
  */
 export type BadgeColor = 'red' | 'yellow' | 'blue' | 'green' | 'orange' | 'gray'
 
+// ============================================================================
+// Custom Links & Groups Types
+// ============================================================================
+
+/**
+ * Custom navigation link configuration
+ */
+export interface CustomLink {
+  /**
+   * Display label for the link
+   */
+  label: string
+
+  /**
+   * URL path or full URL for the link
+   * - Relative paths: '/admin/custom-view'
+   * - Absolute paths: '/api/docs'
+   * - External URLs: 'https://docs.example.com'
+   */
+  href: string
+
+  /**
+   * Group label to place this link in
+   * If group doesn't exist, it will be created
+   * @default 'Custom'
+   */
+  group?: string
+
+  /**
+   * Icon key (from defaults) or custom icon component
+   * @default 'link'
+   */
+  icon?: string | LucideIcon | React.ComponentType<{ size?: number; className?: string }>
+
+  /**
+   * Whether this is an external link (opens in new tab)
+   * Auto-detected if href starts with http:// or https://
+   * @default false
+   */
+  external?: boolean
+
+  /**
+   * Position within the group
+   * Lower number = higher position
+   * @default 50
+   */
+  order?: number
+
+  /**
+   * Whether this link can be pinned
+   * @default true
+   */
+  pinnable?: boolean
+}
+
+/**
+ * Custom navigation group configuration
+ */
+export interface CustomGroup {
+  /**
+   * Group label (used for display and as identifier)
+   */
+  label: string
+
+  /**
+   * Sort order priority (lower = appears first)
+   * Overrides groupOrder setting for this group
+   * @default 50
+   */
+  order?: number
+
+  /**
+   * Whether group starts expanded
+   * @default true
+   */
+  defaultOpen?: boolean
+}
+
 /**
  * Badge configuration with count and optional color
  */
@@ -39,7 +117,7 @@ export interface ResolvedBadge {
  */
 export interface PinnedItem {
   slug: string
-  type: 'collection' | 'global'
+  type: 'collection' | 'global' | 'custom'
   order: number
 }
 
@@ -48,12 +126,22 @@ export interface PinnedItem {
 // ============================================================================
 
 /**
- * Navigation entity (collection or global)
+ * Navigation entity (collection, global, or custom link)
  */
 export interface NavEntity {
   slug: string
-  type: 'collection' | 'global'
+  type: 'collection' | 'global' | 'custom'
   label: string
+  /** Full href for custom links */
+  href?: string
+  /** Whether link opens in new tab */
+  external?: boolean
+  /** Icon key or component */
+  icon?: string | IconComponent
+  /** Whether this can be pinned */
+  pinnable?: boolean
+  /** Order within group */
+  order?: number
 }
 
 /**
@@ -93,6 +181,32 @@ export interface PayloadSidebarOptions {
   icons?: Record<string, IconComponent>
 
   /**
+   * Custom navigation links
+   * Add your own links to the sidebar
+   * @example
+   * ```ts
+   * customLinks: [
+   *   { label: 'Analytics', href: '/admin/analytics', group: 'Tools' },
+   *   { label: 'Docs', href: 'https://docs.example.com', external: true },
+   * ]
+   * ```
+   */
+  customLinks?: CustomLink[]
+
+  /**
+   * Custom navigation groups
+   * Define additional groups or configure existing ones
+   * @example
+   * ```ts
+   * customGroups: [
+   *   { label: 'Tools', order: 5 },
+   *   { label: 'External', order: 99, defaultOpen: false },
+   * ]
+   * ```
+   */
+  customGroups?: CustomGroup[]
+
+  /**
    * Bật/tắt tính năng pin items
    * @default true
    */
@@ -130,6 +244,8 @@ export interface PayloadSidebarOptions {
 export interface ResolvedPluginOptions {
   groupOrder: Record<string, number>
   icons: Record<string, IconComponent>
+  customLinks: CustomLink[]
+  customGroups: CustomGroup[]
   enablePinning: boolean
   pinnedStorage: 'preferences' | 'localStorage'
   classPrefix: string
@@ -155,5 +271,6 @@ export interface NavConfigContextValue {
   enablePinning: boolean
   pinnedStorage: 'preferences' | 'localStorage'
   cssVariables: Record<string, string>
+  customLinks: CustomLink[]
   onPinChange?: (item: PinnedItem, action: 'pin' | 'unpin') => void
 }

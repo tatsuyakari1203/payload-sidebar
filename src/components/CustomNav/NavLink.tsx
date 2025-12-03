@@ -3,18 +3,21 @@
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
 import React from 'react'
-import { Pin, Check, File } from 'lucide-react'
+import { Pin, Check, File, ExternalLink } from 'lucide-react'
 import { useNavConfig } from '../NavContext'
 import { useBadge, getBadgeColorClass } from '../../hooks/useBadge'
+import type { IconComponent } from '../../types'
 
 interface NavLinkProps {
   href: string
   id: string
   slug?: string
-  type?: 'collection' | 'global'
+  type?: 'collection' | 'global' | 'custom'
   children: React.ReactNode
   isPinned?: boolean
   onTogglePin?: () => void
+  external?: boolean
+  customIcon?: string | IconComponent
 }
 
 export const NavLink: React.FC<NavLinkProps> = ({
@@ -25,36 +28,75 @@ export const NavLink: React.FC<NavLinkProps> = ({
   children,
   isPinned = false,
   onTogglePin,
+  external = false,
+  customIcon,
 }) => {
   const pathname = usePathname()
   const { icons, classPrefix, enablePinning } = useNavConfig()
   const badge = useBadge(slug || '')
 
   // Check if current path matches or starts with this link's href
-  const isActive = pathname === href || pathname.startsWith(`${href}/`)
+  // For external links, never mark as active
+  const isActive = !external && (pathname === href || pathname.startsWith(`${href}/`))
 
-  // Get slug from id (nav-{slug} or nav-global-{slug})
-  const extractedSlug = slug || id.replace('nav-global-', '').replace('nav-', '')
-  const Icon = icons[extractedSlug] || File
+  // Get icon: custom icon > icon from config > default File icon
+  const extractedSlug = slug || id.replace('nav-global-', '').replace('nav-custom-', '').replace('nav-', '')
+
+  let Icon: IconComponent = File
+  if (customIcon) {
+    if (typeof customIcon === 'string') {
+      // Icon key from defaults
+      Icon = icons[customIcon] || icons[extractedSlug] || File
+    } else {
+      // Custom React component
+      Icon = customIcon
+    }
+  } else {
+    Icon = icons[extractedSlug] || File
+  }
+
+  // For external links, show external indicator
+  const isExternalLink = external || href.startsWith('http://') || href.startsWith('https://') || href.startsWith('//')
+
+  const linkContent = (
+    <>
+      <Icon className={`${classPrefix}__link-icon`} size={18} />
+      {children}
+      {isExternalLink && (
+        <ExternalLink className={`${classPrefix}__link-external-icon`} size={12} />
+      )}
+      {badge && (
+        <span
+          className={`${classPrefix}__link-badge ${getBadgeColorClass(badge.color, classPrefix)}`}
+        >
+          {badge.count > 99 ? '99+' : badge.count}
+        </span>
+      )}
+    </>
+  )
 
   return (
     <div className={`${classPrefix}__link-wrapper`}>
-      <Link
-        className={`${classPrefix}__link${isActive ? ` ${classPrefix}__link--active` : ''}`}
-        href={href}
-        id={id}
-        aria-current={isActive ? 'page' : undefined}
-      >
-        <Icon className={`${classPrefix}__link-icon`} size={18} />
-        {children}
-        {badge && (
-          <span
-            className={`${classPrefix}__link-badge ${getBadgeColorClass(badge.color, classPrefix)}`}
-          >
-            {badge.count > 99 ? '99+' : badge.count}
-          </span>
-        )}
-      </Link>
+      {isExternalLink ? (
+        <a
+          className={`${classPrefix}__link ${classPrefix}__link--external`}
+          href={href}
+          id={id}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          {linkContent}
+        </a>
+      ) : (
+        <Link
+          className={`${classPrefix}__link${isActive ? ` ${classPrefix}__link--active` : ''}`}
+          href={href}
+          id={id}
+          aria-current={isActive ? 'page' : undefined}
+        >
+          {linkContent}
+        </Link>
+      )}
       {enablePinning && onTogglePin && (
         <button
           className={`${classPrefix}__pin-btn${isPinned ? ` ${classPrefix}__pin-btn--pinned` : ''}`}

@@ -1,0 +1,30 @@
+{
+  "folders": [
+	{
+		"path": "../karis-payload"
+	},
+	{
+		"path": "."
+	}
+],
+  "settings": {
+    "workbench.colorTheme": "Catppuccin Mocha",
+    "workbench.iconTheme": "catppuccin-mocha",
+    "typescript.tsdk": "node_modules/typescript/lib",
+    "typescript.enablePromptUseWorkspaceTsdk": true,
+    "typescript.tsserver.log": "off",
+    "typescript.tsserver.maxTsServerMemory": 8192,
+    "typescript.disableAutomaticTypeAcquisition": true,
+    "typescript.validate.enable": true,
+    "js/ts.implicitProjectConfig.checkJs": false,
+    "typescript.tsserver.experimental.enableProjectDiagnostics": false,
+    "typescript.tsserver.useSyntaxServer": "auto",
+    "problems.autoReveal": false,
+    "problems.showCurrentInStatus": true,
+    "problems.decorations.enabled": true,
+    "typescript.preferences.includePackageJsonAutoImports": "off",
+    "search.followSymlinks": false,
+    "workbench.list.smoothScrolling": true,
+    "terminal.integrated.smoothScrolling": true
+  }
+}

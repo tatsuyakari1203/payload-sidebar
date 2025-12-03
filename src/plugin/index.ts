@@ -1,4 +1,5 @@
 import type { Config } from 'payload'
+import type { CustomLink, CustomGroup, IconComponent } from '../types'
 
 /**
  * Plugin options for Payload Sidebar
@@ -11,7 +12,34 @@ export interface PayloadSidebarPluginOptions {
   /**
    * Custom icons for collections/globals
    */
-  icons?: Record<string, string>
+  icons?: Record<string, IconComponent>
+
+  /**
+   * Custom navigation links
+   * Add your own links to the sidebar navigation
+   * @example
+   * ```ts
+   * customLinks: [
+   *   { label: 'Analytics', href: '/admin/analytics', group: 'Tools', icon: 'chart' },
+   *   { label: 'API Docs', href: 'https://api.example.com/docs', external: true },
+   * ]
+   * ```
+   */
+  customLinks?: CustomLink[]
+
+  /**
+   * Custom navigation groups
+   * Define additional groups or configure existing ones
+   * @example
+   * ```ts
+   * customGroups: [
+   *   { label: 'Tools', order: 5 },
+   *   { label: 'External', order: 99, defaultOpen: false },
+   * ]
+   * ```
+   */
+  customGroups?: CustomGroup[]
+
   /**
    * Enable pinning functionality
    * @default true

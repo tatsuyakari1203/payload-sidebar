@@ -7,7 +7,7 @@ import { StyleInjector } from './StyleInjector'
 import { NavContent } from './NavContent'
 import { NavConfigProvider } from '../NavContext'
 import { DEFAULT_ICONS } from '../../defaults'
-import type { NavEntity, NavConfigContextValue } from '../../types'
+import type { NavEntity, NavConfigContextValue, CustomLink } from '../../types'
 
 interface NavGroupData {
   label: string
@@ -19,6 +19,7 @@ interface SerializableNavConfig {
   enablePinning: boolean
   pinnedStorage: 'preferences' | 'localStorage'
   cssVariables: Record<string, string>
+  customLinks: CustomLink[]
 }
 
 interface NavClientWrapperProps {
@@ -56,6 +57,7 @@ export const CustomNavClient: React.FC<NavClientWrapperProps> = (props) => {
     enablePinning: navConfig.enablePinning,
     pinnedStorage: navConfig.pinnedStorage,
     cssVariables: navConfig.cssVariables,
+    customLinks: navConfig.customLinks,
   }
 
   return (

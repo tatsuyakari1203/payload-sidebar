@@ -34,6 +34,18 @@ import {
   Activity,
   Heart,
   ThumbsUp,
+  Link,
+  ExternalLink,
+  Globe,
+  Sparkles,
+  Zap,
+  Star,
+  Folder,
+  FileCode,
+  Terminal,
+  HelpCircle,
+  Info,
+  BookMarked,
 } from 'lucide-react'
 import type { IconComponent } from './types'
 
@@ -151,6 +163,25 @@ export const DEFAULT_ICONS: Record<string, IconComponent> = {
 
   // Advanced / Fallback
   advanced: Wrench,
+
+  // ===== CUSTOM LINKS =====
+  // Default icons for custom links
+  link: Link,
+  'external-link': ExternalLink,
+  external: ExternalLink,
+  globe: Globe,
+  sparkles: Sparkles,
+  zap: Zap,
+  star: Star,
+  folder: Folder,
+  'file-code': FileCode,
+  terminal: Terminal,
+  help: HelpCircle,
+  info: Info,
+  docs: BookMarked,
+  documentation: BookMarked,
+  api: Terminal,
+  custom: Sparkles,
 }
 
 // ============================================================================
