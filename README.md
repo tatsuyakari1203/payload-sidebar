@@ -1,27 +1,27 @@
 # payload-sidebar-plugin
 
-A customizable navigation sidebar plugin for Payload CMS 3.x with sortable groups, pinning, custom icons, and multi-color badges.
+A powerful, customizable navigation sidebar plugin for Payload CMS 3.x with sortable groups, pinning, custom links, and multi-color badges.
 
 [![npm version](https://img.shields.io/npm/v/payload-sidebar-plugin.svg)](https://www.npmjs.com/package/payload-sidebar-plugin)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-## Features
+## ✨ Features
 
 - 📁 **Sortable Navigation Groups** - Define custom order for your nav groups
 - 📌 **Pin Items** - Pin frequently used items to the top (persisted per-user)
+- 🔗 **Custom Links & Groups** - Add your own navigation links and groups
 - 🎨 **Custom Icons** - Use Lucide icons or your own components
 - 🔔 **Multi-color Badges** - Show notification counts with different colors
-- 🔗 **Custom Links & Groups** - Add your own navigation links and groups
 - 🌐 **i18n Support** - Works with English, Vietnamese, and other languages
 - ⚡ **Zero Config** - Works out of the box, just add to plugins
 
-## Requirements
+## 📋 Requirements
 
 - Payload CMS 3.x
 - Next.js 14+ or 15+
 - React 18+ or 19+
 
-## Installation
+## 📦 Installation
 
 ```bash
 # npm
@@ -34,7 +34,7 @@ pnpm add payload-sidebar-plugin
 yarn add payload-sidebar-plugin
 ```
 
-## Quick Start
+## 🚀 Quick Start
 
 Add the plugin to your `payload.config.ts`:
 
@@ -52,85 +52,141 @@ export default buildConfig({
 
 That's it! The plugin will automatically replace the default navigation with the enhanced sidebar.
 
-## Configuration Options
+---
+
+## 📖 Table of Contents
+
+- [Configuration Options](#-configuration-options)
+- [Custom Links & Groups](#-custom-links--groups)
+- [Group Ordering](#-group-ordering)
+- [Pinning Items](#-pinning-items)
+- [Adding Badges](#-adding-badges)
+- [Styling](#-styling)
+- [Real-World Examples](#-real-world-examples)
+- [API Reference](#-api-reference)
+- [Troubleshooting](#-troubleshooting)
+
+---
+
+## ⚙️ Configuration Options
 
 ```typescript
 import { payloadSidebar } from 'payload-sidebar-plugin'
+import { BarChart3, BookOpen, Github } from 'lucide-react'
 
 payloadSidebar({
-  // Sort order for navigation groups (lower number = higher priority)
+  // Sort order for navigation groups
   groupOrder: {
     Content: 1,
     Users: 2,
     Settings: 3,
   },
 
+  // Custom navigation links
+  customLinks: [
+    {
+      label: 'Analytics',
+      href: '/admin/analytics',
+      group: 'Tools',
+      icon: BarChart3,
+    },
+    {
+      label: 'Documentation',
+      href: 'https://docs.example.com',
+      group: 'Resources',
+      external: true,
+      icon: BookOpen,
+    },
+  ],
+
+  // Custom navigation groups
+  customGroups: [
+    { label: 'Tools', order: 5 },
+    { label: 'Resources', order: 99, defaultOpen: false },
+  ],
+
   // Enable pin functionality (default: true)
   enablePinning: true,
 
-  // Storage for pinned items: 'preferences' (server) or 'localStorage' (client)
-  pinnedStorage: 'preferences',
+  // Storage for pinned items
+  pinnedStorage: 'preferences', // or 'localStorage'
 
   // CSS class prefix (default: 'nav')
   classPrefix: 'nav',
 
   // Custom CSS variables for badge colors
   cssVariables: {
-    '--badge-color-red': '#ef4444',
-    '--badge-color-blue': '#3b82f6',
+    '--badge-red-bg': '#ef4444',
+    '--badge-blue-bg': '#3b82f6',
   },
 })
 ```
 
 ### Options Reference
 
-| Option          | Type                              | Default         | Description                                                             |
-| --------------- | --------------------------------- | --------------- | ----------------------------------------------------------------------- |
-| `groupOrder`    | `Record<string, number>`          | `{}`            | Priority map for sorting nav groups. Lower numbers appear first.        |
-| `customLinks`   | `CustomLink[]`                    | `[]`            | Add custom navigation links to the sidebar.                             |
-| `customGroups`  | `CustomGroup[]`                   | `[]`            | Define custom groups or configure existing ones.                        |
-| `enablePinning` | `boolean`                         | `true`          | Enable/disable the pin items feature.                                   |
-| `pinnedStorage` | `'preferences' \| 'localStorage'` | `'preferences'` | Where to store pinned items. `preferences` persists on server per-user. |
-| `classPrefix`   | `string`                          | `'nav'`         | CSS class prefix for styling.                                           |
-| `cssVariables`  | `Record<string, string>`          | `{}`            | Override default CSS variables.                                         |
+| Option          | Type                              | Default         | Description                                                      |
+| --------------- | --------------------------------- | --------------- | ---------------------------------------------------------------- |
+| `groupOrder`    | `Record<string, number>`          | `{}`            | Priority map for sorting nav groups. Lower numbers appear first. |
+| `customLinks`   | `CustomLink[]`                    | `[]`            | Add custom navigation links to the sidebar.                      |
+| `customGroups`  | `CustomGroup[]`                   | `[]`            | Define custom groups or configure existing ones.                 |
+| `enablePinning` | `boolean`                         | `true`          | Enable/disable the pin items feature.                            |
+| `pinnedStorage` | `'preferences' \| 'localStorage'` | `'preferences'` | Where to store pinned items.                                     |
+| `classPrefix`   | `string`                          | `'nav'`         | CSS class prefix for styling.                                    |
+| `cssVariables`  | `Record<string, string>`          | `{}`            | Override default CSS variables.                                  |
 
-## Custom Links & Groups
+---
 
-Add your own navigation links that aren't tied to Payload collections or globals.
+## 🔗 Custom Links & Groups
+
+Add your own navigation links that aren't tied to Payload collections or globals. This is perfect for:
+
+- Admin dashboards and custom views
+- External documentation links
+- Third-party integrations
+- Quick access tools
 
 ### Basic Usage
 
 ```typescript
 import { payloadSidebar } from 'payload-sidebar-plugin'
-import { BarChart, BookOpen, ExternalLink } from 'lucide-react'
+import { BarChart3, BookOpen, FileCode, Rocket, Github } from 'lucide-react'
 
 payloadSidebar({
-  // Add custom links to the sidebar
   customLinks: [
+    // Internal admin views
     {
-      label: 'Analytics Dashboard',
-      href: '/admin/analytics',
+      label: 'System Monitor',
+      href: '/admin/system-monitor',
       group: 'Tools',
-      icon: 'chart', // Use icon key from defaults
+      icon: BarChart3,
+      order: 1,
     },
     {
-      label: 'API Documentation',
-      href: 'https://api.example.com/docs',
+      label: 'API Explorer',
+      href: '/api',
+      group: 'Tools',
+      icon: FileCode,
+      order: 2,
+    },
+    // External resources (opens in new tab)
+    {
+      label: 'Payload Docs',
+      href: 'https://payloadcms.com/docs',
       group: 'Resources',
-      external: true, // Opens in new tab
-      icon: BookOpen, // Or pass Lucide icon directly
+      icon: BookOpen,
+      external: true,
     },
     {
-      label: 'Design System',
-      href: '/admin/design-system',
-      group: 'Tools',
-      order: 1, // Appears first in the group
+      label: 'GitHub Repo',
+      href: 'https://github.com/your-org/your-repo',
+      group: 'Resources',
+      icon: Github,
+      external: true,
     },
   ],
 
-  // Define custom groups
   customGroups: [
-    { label: 'Tools', order: 5 },
+    { label: 'Tools', order: 15 },
     { label: 'Resources', order: 99, defaultOpen: false },
   ],
 })
@@ -156,88 +212,30 @@ payloadSidebar({
 | `order`       | `number`  | `50`       | Sort order priority (lower = appears first)       |
 | `defaultOpen` | `boolean` | `true`     | Whether group starts expanded                     |
 
-### Available Icon Keys
-
-You can use these icon keys in the `icon` property:
+### Available Default Icon Keys
 
 ```typescript
-// Navigation
-'dashboard', 'link', 'external-link', 'globe'
-
 // Content
-'docs', 'documentation', 'api', 'file-code'
+'pages', 'posts', 'media', 'files', 'categories'
+
+// Users & Settings
+'users', 'settings', 'dashboard'
 
 // Tools
-'terminal', 'sparkles', 'zap', 'star'
+'terminal', 'api', 'file-code', 'chart'
+
+// External
+'link', 'external-link', 'globe', 'docs'
 
 // General
-'folder', 'help', 'info', 'custom'
+'sparkles', 'zap', 'star', 'folder', 'help', 'info'
 ```
 
-Or import and use any Lucide icon directly:
+---
 
-```typescript
-import { Rocket, Database, Shield } from 'lucide-react'
+## 📁 Group Ordering
 
-customLinks: [
-  { label: 'Launch', href: '/admin/launch', icon: Rocket },
-  { label: 'Database', href: '/admin/db', icon: Database },
-]
-```
-
-### Use Cases
-
-#### 1. Admin Custom Views
-
-Link to custom admin views you've created:
-
-```typescript
-payloadSidebar({
-  customLinks: [
-    { label: 'Analytics', href: '/admin/analytics', group: 'Dashboards', icon: 'chart' },
-    { label: 'Reports', href: '/admin/reports', group: 'Dashboards' },
-    { label: 'Import/Export', href: '/admin/import-export', group: 'Tools' },
-  ],
-  customGroups: [
-    { label: 'Dashboards', order: 1 },
-    { label: 'Tools', order: 10 },
-  ],
-})
-```
-
-#### 2. External Resources
-
-Link to documentation, APIs, or external tools:
-
-```typescript
-payloadSidebar({
-  customLinks: [
-    { label: 'API Docs', href: 'https://api.example.com/docs', group: 'Resources' },
-    { label: 'Figma Designs', href: 'https://figma.com/file/xxx', group: 'Resources' },
-    { label: 'Slack Channel', href: 'https://slack.com/xxx', group: 'Resources' },
-  ],
-  customGroups: [{ label: 'Resources', order: 99, defaultOpen: false }],
-})
-```
-
-#### 3. Mixed with Existing Groups
-
-Add custom links alongside Payload collections:
-
-```typescript
-payloadSidebar({
-  customLinks: [
-    // Add to existing "Content" group alongside posts, pages, etc.
-    { label: 'Content Calendar', href: '/admin/calendar', group: 'Content', order: 0 },
-    // Add to existing "Settings" group
-    { label: 'Integrations', href: '/admin/integrations', group: 'Settings' },
-  ],
-})
-```
-
-## Group Ordering
-
-Control the order of navigation groups:
+Control the order of navigation groups with support for i18n:
 
 ```typescript
 payloadSidebar({
@@ -254,25 +252,31 @@ payloadSidebar({
     'Người dùng': 3,
     'Cài đặt': 10,
 
+    // Custom groups
+    Tools: 15,
+    Resources: 99,
+
     // Unlisted groups default to priority 50
   },
 })
 ```
 
-Groups are sorted by their priority number. Groups not listed in `groupOrder` default to priority 50.
+---
 
-## Pinning Items
+## 📌 Pinning Items
 
-When `enablePinning` is true (default), users can:
+Users can pin frequently used items to the top of the sidebar for quick access.
+
+### Features
 
 - Click the pin icon on any nav item to pin it
 - Pinned items appear at the top in a "Pinned" section
-- Drag to reorder pinned items
 - Unpin items by clicking the X button
+- Works with collections, globals, and custom links
 
 ### Storage Options
 
-**Server-side (recommended for multi-device users):**
+**Server-side storage (recommended):**
 
 ```typescript
 payloadSidebar({
@@ -280,117 +284,257 @@ payloadSidebar({
 })
 ```
 
-**Client-side (simpler, single device):**
+**Client-side storage:**
 
 ```typescript
 payloadSidebar({
-  pinnedStorage: 'localStorage',
+  pinnedStorage: 'localStorage', // Simpler, but doesn't sync across devices
 })
 ```
 
-### API Routes for Server-side Storage
+### API Routes Setup (for server-side storage)
 
-When using `pinnedStorage: 'preferences'`, the plugin expects these API routes:
+When using `pinnedStorage: 'preferences'`, you need to create these API routes:
 
-```
-GET  /api/nav/pinned   - Get user's pinned items
-POST /api/nav/pin      - Pin an item
-POST /api/nav/unpin    - Unpin an item
-POST /api/nav/reorder  - Reorder pinned items
-```
-
-Example implementation:
+**1. Create the pinned items route:**
 
 ```typescript
 // src/app/api/nav/pinned/route.ts
 import { getPayload } from 'payload'
-import configPromise from '@payload-config'
+import config from '@payload-config'
+import { NextResponse } from 'next/server'
 import { headers } from 'next/headers'
 
+export interface PinnedItem {
+  slug: string
+  type: 'collection' | 'global' | 'custom'
+  order: number
+}
+
 export async function GET() {
-  const payload = await getPayload({ config: configPromise })
-  const headersList = await headers()
+  try {
+    const payload = await getPayload({ config })
+    const headersList = await headers()
+    const { user } = await payload.auth({ headers: headersList })
 
-  const { user } = await payload.auth({ headers: headersList })
-  if (!user) {
-    return Response.json({ pinnedItems: [] })
+    if (!user) {
+      return NextResponse.json({ pinnedItems: [] })
+    }
+
+    const prefs = await payload.find({
+      collection: 'payload-preferences',
+      where: {
+        key: { equals: 'nav-pinned' },
+        'user.value': { equals: user.id },
+      },
+      limit: 1,
+      depth: 0,
+    })
+
+    const pinnedItems = (prefs.docs[0]?.value as { pinnedItems?: PinnedItem[] })?.pinnedItems || []
+    return NextResponse.json({ pinnedItems })
+  } catch (error) {
+    console.error('Error fetching pinned items:', error)
+    return NextResponse.json({ pinnedItems: [] })
   }
-
-  const prefs = await payload.find({
-    collection: 'payload-preferences',
-    where: {
-      key: { equals: 'nav-pinned' },
-      'user.value': { equals: user.id },
-    },
-    limit: 1,
-  })
-
-  const pinnedItems = (prefs.docs[0]?.value as { items?: string[] })?.items || []
-  return Response.json({ pinnedItems })
 }
 ```
+
+**2. Create the pin route:**
 
 ```typescript
 // src/app/api/nav/pin/route.ts
 import { getPayload } from 'payload'
-import configPromise from '@payload-config'
+import config from '@payload-config'
+import { NextResponse } from 'next/server'
 import { headers } from 'next/headers'
+import type { PinnedItem } from '../pinned/route'
 
 export async function POST(request: Request) {
-  const payload = await getPayload({ config: configPromise })
-  const headersList = await headers()
+  try {
+    const payload = await getPayload({ config })
+    const headersList = await headers()
+    const { user } = await payload.auth({ headers: headersList })
 
-  const { user } = await payload.auth({ headers: headersList })
-  if (!user) {
-    return Response.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-
-  const { slug } = await request.json()
-
-  // Get current pinned items
-  const prefs = await payload.find({
-    collection: 'payload-preferences',
-    where: {
-      key: { equals: 'nav-pinned' },
-      'user.value': { equals: user.id },
-    },
-    limit: 1,
-  })
-
-  const currentItems = (prefs.docs[0]?.value as { items?: string[] })?.items || []
-
-  if (!currentItems.includes(slug)) {
-    const newItems = [...currentItems, slug]
-
-    if (prefs.docs[0]) {
-      await payload.update({
-        collection: 'payload-preferences',
-        id: prefs.docs[0].id,
-        data: { value: { items: newItems } },
-      })
-    } else {
-      await payload.create({
-        collection: 'payload-preferences',
-        data: {
-          key: 'nav-pinned',
-          user: { relationTo: 'users', value: user.id },
-          value: { items: newItems },
-        },
-      })
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
-  }
 
-  return Response.json({ success: true })
+    const { slug, type } = await request.json()
+
+    const prefs = await payload.find({
+      collection: 'payload-preferences',
+      where: {
+        key: { equals: 'nav-pinned' },
+        'user.value': { equals: user.id },
+      },
+      limit: 1,
+      depth: 0,
+    })
+
+    const existingItems: PinnedItem[] =
+      (prefs.docs[0]?.value as { pinnedItems?: PinnedItem[] })?.pinnedItems || []
+
+    if (existingItems.some(item => item.slug === slug && item.type === type)) {
+      return NextResponse.json({ success: true, message: 'Already pinned' })
+    }
+
+    const newItems: PinnedItem[] = [...existingItems, { slug, type, order: existingItems.length }]
+    const userCollection = (user as { collection?: string }).collection || 'users'
+
+    await payload.db.upsert({
+      collection: 'payload-preferences',
+      data: {
+        key: 'nav-pinned',
+        user: { relationTo: userCollection, value: user.id },
+        value: { pinnedItems: newItems },
+      },
+      where: {
+        and: [
+          { key: { equals: 'nav-pinned' } },
+          { 'user.value': { equals: user.id } },
+          { 'user.relationTo': { equals: userCollection } },
+        ],
+      },
+    })
+
+    return NextResponse.json({ success: true, pinnedItems: newItems })
+  } catch (error) {
+    console.error('Error pinning item:', error)
+    return NextResponse.json({ error: 'Failed to pin' }, { status: 500 })
+  }
 }
 ```
 
-## Adding Badges
+**3. Create the unpin route:**
 
-Badges display notification counts, statistics, or status indicators on navigation items. They support multiple colors and are fully customizable.
+```typescript
+// src/app/api/nav/unpin/route.ts
+import { getPayload } from 'payload'
+import config from '@payload-config'
+import { NextResponse } from 'next/server'
+import { headers } from 'next/headers'
+import type { PinnedItem } from '../pinned/route'
 
-### Basic Setup
+export async function POST(request: Request) {
+  try {
+    const payload = await getPayload({ config })
+    const headersList = await headers()
+    const { user } = await payload.auth({ headers: headersList })
 
-1. **Create a Badge Provider** that wraps your admin panel:
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const { slug, type } = await request.json()
+
+    const prefs = await payload.find({
+      collection: 'payload-preferences',
+      where: {
+        key: { equals: 'nav-pinned' },
+        'user.value': { equals: user.id },
+      },
+      limit: 1,
+      depth: 0,
+    })
+
+    if (!prefs.docs[0]) {
+      return NextResponse.json({ success: true, message: 'No pinned items' })
+    }
+
+    const existingItems: PinnedItem[] =
+      (prefs.docs[0]?.value as { pinnedItems?: PinnedItem[] })?.pinnedItems || []
+
+    const newItems = existingItems
+      .filter(item => !(item.slug === slug && item.type === type))
+      .map((item, index) => ({ ...item, order: index }))
+
+    const userCollection = (user as { collection?: string }).collection || 'users'
+
+    await payload.db.upsert({
+      collection: 'payload-preferences',
+      data: {
+        key: 'nav-pinned',
+        user: { relationTo: userCollection, value: user.id },
+        value: { pinnedItems: newItems },
+      },
+      where: {
+        and: [
+          { key: { equals: 'nav-pinned' } },
+          { 'user.value': { equals: user.id } },
+          { 'user.relationTo': { equals: userCollection } },
+        ],
+      },
+    })
+
+    return NextResponse.json({ success: true, pinnedItems: newItems })
+  } catch (error) {
+    console.error('Error unpinning item:', error)
+    return NextResponse.json({ error: 'Failed to unpin' }, { status: 500 })
+  }
+}
+```
+
+**4. Create the reorder route:**
+
+```typescript
+// src/app/api/nav/reorder/route.ts
+import { getPayload } from 'payload'
+import config from '@payload-config'
+import { NextResponse } from 'next/server'
+import { headers } from 'next/headers'
+import type { PinnedItem } from '../pinned/route'
+
+export async function POST(request: Request) {
+  try {
+    const payload = await getPayload({ config })
+    const headersList = await headers()
+    const { user } = await payload.auth({ headers: headersList })
+
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const { items } = await request.json()
+
+    const reorderedItems = items.map((item: PinnedItem, index: number) => ({
+      ...item,
+      order: index,
+    }))
+
+    const userCollection = (user as { collection?: string }).collection || 'users'
+
+    await payload.db.upsert({
+      collection: 'payload-preferences',
+      data: {
+        key: 'nav-pinned',
+        user: { relationTo: userCollection, value: user.id },
+        value: { pinnedItems: reorderedItems },
+      },
+      where: {
+        and: [
+          { key: { equals: 'nav-pinned' } },
+          { 'user.value': { equals: user.id } },
+          { 'user.relationTo': { equals: userCollection } },
+        ],
+      },
+    })
+
+    return NextResponse.json({ success: true, pinnedItems: reorderedItems })
+  } catch (error) {
+    console.error('Error reordering items:', error)
+    return NextResponse.json({ error: 'Failed to reorder' }, { status: 500 })
+  }
+}
+```
+
+---
+
+## 🔔 Adding Badges
+
+Display notification counts, statistics, or status indicators on navigation items.
+
+### Step 1: Create a Badge Provider
 
 ```tsx
 // src/components/NavBadgeProvider.tsx
@@ -410,7 +554,7 @@ export function NavBadgeProvider({ children }: { children: React.ReactNode }) {
 }
 ```
 
-2. **Register the provider** in your Payload config:
+### Step 2: Register as Admin Provider
 
 ```typescript
 // payload.config.ts
@@ -420,423 +564,107 @@ export default buildConfig({
       providers: ['@/components/NavBadgeProvider'],
     },
   },
-  // ...
 })
 ```
 
-3. **Generate import map**:
+### Step 3: Generate Import Map
 
 ```bash
 npx payload generate:importmap
 ```
 
----
+### Badge Colors
 
-### Use Cases
+| Color    | Use Case                  | Example                      |
+| -------- | ------------------------- | ---------------------------- |
+| `red`    | Urgent, unread, errors    | Unread messages, failed jobs |
+| `orange` | Warnings, needs attention | Pending comments             |
+| `yellow` | Drafts, pending review    | Draft posts                  |
+| `blue`   | Informational             | Total pages                  |
+| `green`  | Success, published        | Published posts              |
+| `gray`   | Archived, inactive        | Media count                  |
 
-#### 1. Unread Notifications (Real-time)
-
-Show unread chat messages or comments with Pusher/WebSocket:
-
-```tsx
-'use client'
-
-import React, { useEffect, useState } from 'react'
-import { SidebarBadgeProvider } from 'payload-sidebar-plugin/components'
-import Pusher from 'pusher-js'
-
-export function NavBadgeProvider({ children }: { children: React.ReactNode }) {
-  const [unreadChats, setUnreadChats] = useState(0)
-  const [unreadComments, setUnreadComments] = useState(0)
-
-  useEffect(() => {
-    // Connect to Pusher for real-time updates
-    const pusher = new Pusher('your-key', { cluster: 'mt1' })
-    const channel = pusher.subscribe('admin-notifications')
-
-    channel.bind('new-chat', () => setUnreadChats(prev => prev + 1))
-    channel.bind('new-comment', () => setUnreadComments(prev => prev + 1))
-
-    return () => pusher.disconnect()
-  }, [])
-
-  const badges = {
-    'chat-dashboard': unreadChats > 0 ? { count: unreadChats, color: 'red' as const } : undefined,
-    'comments-dashboard':
-      unreadComments > 0 ? { count: unreadComments, color: 'orange' as const } : undefined,
-  }
-
-  // Filter out undefined values
-  const filteredBadges = Object.fromEntries(
-    Object.entries(badges).filter(([, v]) => v !== undefined)
-  ) as Record<string, { count: number; color: 'red' | 'orange' }>
-
-  return <SidebarBadgeProvider badges={filteredBadges}>{children}</SidebarBadgeProvider>
-}
-```
-
-#### 2. Collection Document Counts
-
-Display total documents in each collection:
+### Real-time Badges Example
 
 ```tsx
+// src/components/NavBadgeProvider.tsx
 'use client'
 
-import React, { useEffect, useState } from 'react'
+import React from 'react'
 import { SidebarBadgeProvider } from 'payload-sidebar-plugin/components'
+import { useNotifications } from '@/providers/NotificationProvider'
 
 export function NavBadgeProvider({ children }: { children: React.ReactNode }) {
-  const [counts, setCounts] = useState({
-    posts: 0,
-    pages: 0,
-    media: 0,
-    users: 0,
-  })
-
-  useEffect(() => {
-    const fetchCounts = async () => {
-      const [posts, pages, media, users] = await Promise.all([
-        fetch('/api/posts?limit=0').then(r => r.json()),
-        fetch('/api/pages?limit=0').then(r => r.json()),
-        fetch('/api/media?limit=0').then(r => r.json()),
-        fetch('/api/users?limit=0').then(r => r.json()),
-      ])
-
-      setCounts({
-        posts: posts.totalDocs || 0,
-        pages: pages.totalDocs || 0,
-        media: media.totalDocs || 0,
-        users: users.totalDocs || 0,
-      })
-    }
-
-    fetchCounts()
-    // Refresh every 30 seconds
-    const interval = setInterval(fetchCounts, 30000)
-    return () => clearInterval(interval)
-  }, [])
-
-  const badges = {
-    posts: counts.posts > 0 ? { count: counts.posts, color: 'green' as const } : undefined,
-    pages: counts.pages > 0 ? { count: counts.pages, color: 'blue' as const } : undefined,
-    media: counts.media > 0 ? { count: counts.media, color: 'gray' as const } : undefined,
-    users: counts.users > 0 ? { count: counts.users, color: 'blue' as const } : undefined,
-  }
-
-  const filteredBadges = Object.fromEntries(
-    Object.entries(badges).filter(([, v]) => v !== undefined)
-  ) as Record<string, { count: number; color: 'green' | 'blue' | 'gray' }>
-
-  return <SidebarBadgeProvider badges={filteredBadges}>{children}</SidebarBadgeProvider>
-}
-```
-
-#### 3. Pending Review / Draft Status
-
-Highlight items needing attention:
-
-```tsx
-'use client'
-
-import React, { useEffect, useState } from 'react'
-import { SidebarBadgeProvider } from 'payload-sidebar-plugin/components'
-
-export function NavBadgeProvider({ children }: { children: React.ReactNode }) {
-  const [pending, setPending] = useState({
-    drafts: 0,
-    pendingComments: 0,
-    pendingOrders: 0,
-  })
-
-  useEffect(() => {
-    const fetchPending = async () => {
-      const [drafts, comments, orders] = await Promise.all([
-        fetch('/api/posts?where[_status][equals]=draft&limit=0').then(r => r.json()),
-        fetch('/api/comments?where[status][equals]=pending&limit=0').then(r => r.json()),
-        fetch('/api/orders?where[status][equals]=pending&limit=0').then(r => r.json()),
-      ])
-
-      setPending({
-        drafts: drafts.totalDocs || 0,
-        pendingComments: comments.totalDocs || 0,
-        pendingOrders: orders.totalDocs || 0,
-      })
-    }
-
-    fetchPending()
-    const interval = setInterval(fetchPending, 60000) // Refresh every minute
-    return () => clearInterval(interval)
-  }, [])
-
-  const badges = {
-    posts: pending.drafts > 0 ? { count: pending.drafts, color: 'yellow' as const } : undefined,
-    comments:
-      pending.pendingComments > 0
-        ? { count: pending.pendingComments, color: 'orange' as const }
-        : undefined,
-    orders:
-      pending.pendingOrders > 0
-        ? { count: pending.pendingOrders, color: 'red' as const }
-        : undefined,
-  }
-
-  const filteredBadges = Object.fromEntries(
-    Object.entries(badges).filter(([, v]) => v !== undefined)
-  ) as Record<string, { count: number; color: 'yellow' | 'orange' | 'red' }>
-
-  return <SidebarBadgeProvider badges={filteredBadges}>{children}</SidebarBadgeProvider>
-}
-```
-
-#### 4. Combined: Notifications + Counts
-
-Full example combining multiple data sources:
-
-```tsx
-'use client'
-
-import React, { useEffect, useState } from 'react'
-import { SidebarBadgeProvider } from 'payload-sidebar-plugin/components'
-import { useNotifications } from '@/providers/NotificationProvider' // Your notification hook
-
-type BadgeColor = 'red' | 'yellow' | 'blue' | 'green' | 'orange' | 'gray'
-
-interface BadgeConfig {
-  count: number
-  color: BadgeColor
-}
-
-export function NavBadgeProvider({ children }: { children: React.ReactNode }) {
-  // Real-time notifications from your provider
   const { unreadChats, unreadComments } = useNotifications()
 
-  // Static counts
-  const [counts, setCounts] = useState({
-    posts: 0,
-    pages: 0,
-    media: 0,
-    drafts: 0,
-  })
+  const badges: Record<
+    string,
+    { count: number; color: 'red' | 'yellow' | 'blue' | 'green' | 'orange' | 'gray' }
+  > = {}
 
-  useEffect(() => {
-    const fetchCounts = async () => {
-      try {
-        const [posts, pages, media, drafts] = await Promise.all([
-          fetch('/api/posts?limit=0').then(r => r.json()),
-          fetch('/api/pages?limit=0').then(r => r.json()),
-          fetch('/api/media?limit=0').then(r => r.json()),
-          fetch('/api/posts?where[_status][equals]=draft&limit=0').then(r => r.json()),
-        ])
-
-        setCounts({
-          posts: posts.totalDocs || 0,
-          pages: pages.totalDocs || 0,
-          media: media.totalDocs || 0,
-          drafts: drafts.totalDocs || 0,
-        })
-      } catch (error) {
-        console.error('Failed to fetch badge counts:', error)
-      }
-    }
-
-    fetchCounts()
-    const interval = setInterval(fetchCounts, 30000)
-    return () => clearInterval(interval)
-  }, [])
-
-  // Build badges object
-  const badges: Record<string, BadgeConfig | undefined> = {
-    // Urgent notifications (red/orange)
-    'chat-dashboard': unreadChats > 0 ? { count: unreadChats, color: 'red' } : undefined,
-    'comments-dashboard':
-      unreadComments > 0 ? { count: unreadComments, color: 'orange' } : undefined,
-
-    // Pending items (yellow)
-    drafts: counts.drafts > 0 ? { count: counts.drafts, color: 'yellow' } : undefined,
-
-    // Informational counts (blue/green/gray)
-    posts: counts.posts > 0 ? { count: counts.posts, color: 'green' } : undefined,
-    pages: counts.pages > 0 ? { count: counts.pages, color: 'blue' } : undefined,
-    media: counts.media > 0 ? { count: counts.media, color: 'gray' } : undefined,
+  // Only show badges when there are unread items
+  if (unreadChats > 0) {
+    badges['chat-dashboard'] = { count: unreadChats, color: 'red' }
+  }
+  if (unreadComments > 0) {
+    badges['comments-dashboard'] = { count: unreadComments, color: 'orange' }
   }
 
-  // Remove undefined entries
-  const filteredBadges = Object.fromEntries(
-    Object.entries(badges).filter(([, v]) => v !== undefined)
-  ) as Record<string, BadgeConfig>
-
-  return <SidebarBadgeProvider badges={filteredBadges}>{children}</SidebarBadgeProvider>
+  return <SidebarBadgeProvider badges={badges}>{children}</SidebarBadgeProvider>
 }
 ```
 
 ---
 
-### Badge API Reference
-
-#### SidebarBadgeProvider Props
-
-```typescript
-interface SidebarBadgeProviderProps {
-  children: React.ReactNode
-  badges: Record<string, BadgeConfig>
-}
-
-interface BadgeConfig {
-  count: number // Number to display (0 = hidden)
-  color: 'red' | 'yellow' | 'blue' | 'green' | 'orange' | 'gray'
-}
-```
-
-#### useBadge Hook
-
-Get badge for a specific slug in your custom components:
-
-```tsx
-import { useBadge } from 'payload-sidebar-plugin/hooks'
-
-function MyComponent() {
-  const badge = useBadge('posts') // Returns { count: 5, color: 'blue' } or null
-
-  if (badge) {
-    return <span className={`badge badge--${badge.color}`}>{badge.count}</span>
-  }
-  return null
-}
-```
-
----
-
-### Available Badge Colors
-
-| Color    | Use Case                         | Example                       |
-| -------- | -------------------------------- | ----------------------------- |
-| `red`    | Urgent, unread, errors           | Unread messages, failed jobs  |
-| `orange` | Warnings, needs attention        | Pending comments, expiring    |
-| `yellow` | Drafts, pending review           | Draft posts, awaiting publish |
-| `blue`   | Informational, neutral counts    | Total pages, active users     |
-| `green`  | Success, published, approved     | Published posts, completed    |
-| `gray`   | Archived, inactive, low priority | Media count, old items        |
-
----
-
-### Customizing Badge Colors
-
-Override default colors via plugin options:
-
-```typescript
-payloadSidebar({
-  cssVariables: {
-    // Background colors
-    '--badge-red-bg': '#fef2f2',
-    '--badge-red-text': '#dc2626',
-    '--badge-yellow-bg': '#fefce8',
-    '--badge-yellow-text': '#ca8a04',
-    '--badge-blue-bg': '#eff6ff',
-    '--badge-blue-text': '#2563eb',
-    '--badge-green-bg': '#f0fdf4',
-    '--badge-green-text': '#16a34a',
-    '--badge-orange-bg': '#fff7ed',
-    '--badge-orange-text': '#ea580c',
-    '--badge-gray-bg': '#f9fafb',
-    '--badge-gray-text': '#6b7280',
-  },
-})
-```
-
-Or via CSS:
-
-```css
-/* In your admin.css or global styles */
-:root {
-  --badge-red-bg: #fee2e2;
-  --badge-red-text: #b91c1c;
-  /* ... other colors */
-}
-```
-
-````
-
-## Styling
+## 🎨 Styling
 
 The plugin uses BEM-style CSS classes with a configurable prefix (default: `nav`).
 
-### Main Classes
+### CSS Classes Reference
 
 ```css
+/* Main container */
 .nav {
-  /* Main sidebar container */
 }
 .nav--nav-open {
-  /* When sidebar is open */
-}
-.nav--nav-animate {
-  /* During animations */
 }
 .nav__scroll {
-  /* Scrollable area */
 }
 .nav__wrap {
-  /* Content wrapper */
 }
-.nav__controls {
-  /* Bottom controls (logout, etc) */
-}
-````
 
-### Pinned Section
+/* Pinned section */
+.nav__pinned-section {
+}
+.nav__pinned-header {
+}
+.nav__pinned-items {
+}
+.nav__pinned-item {
+}
 
-```css
-.nav-pinned {
-  /* Pinned items section */
+/* Links */
+.nav__link {
 }
-.nav-pinned__header {
-  /* "Pinned" heading */
+.nav__link--active {
 }
-.nav-pinned__list {
-  /* List of pinned items */
+.nav__link--external {
 }
-.nav-pinned__item {
-  /* Individual pinned item */
+.nav__link-icon {
 }
-.nav-pinned__unpin {
-  /* Unpin button */
+.nav__link-label {
 }
-```
+.nav__link-badge {
+}
+.nav__link-external-icon {
+}
 
-### Navigation Groups
-
-```css
-.nav-group {
-  /* Navigation group container */
+/* Pin button */
+.nav__pin-btn {
 }
-.nav-group__label {
-  /* Group label */
+.nav__pin-btn--pinned {
 }
-.nav-group__list {
-  /* List of nav items */
-}
-```
-
-### Navigation Links
-
-```css
-.nav-link {
-  /* Individual nav link */
-}
-.nav-link--active {
-  /* Currently active page */
-}
-.nav-link__icon {
-  /* Icon container */
-}
-.nav-link__label {
-  /* Text label */
-}
-.nav-link__badge {
-  /* Badge container */
-}
-.nav-link__pin {
-  /* Pin button */
+.nav__unpin-btn {
 }
 ```
 
@@ -844,7 +672,7 @@ The plugin uses BEM-style CSS classes with a configurable prefix (default: `nav`
 
 ```css
 /* Make pinned section stand out */
-.nav-pinned {
+.nav__pinned-section {
   background: var(--theme-elevation-50);
   border-radius: 8px;
   margin: 8px;
@@ -852,28 +680,190 @@ The plugin uses BEM-style CSS classes with a configurable prefix (default: `nav`
 }
 
 /* Custom active state */
-.nav-link--active {
+.nav__link--active {
   background: var(--theme-elevation-100);
   border-left: 3px solid var(--theme-success-500);
 }
 
-/* Larger badges */
-.nav-link__badge {
-  min-width: 24px;
-  height: 24px;
-  font-size: 12px;
+/* Style external link icon */
+.nav__link-external-icon {
+  opacity: 0.5;
+  margin-left: auto;
 }
 ```
 
-## Exports
+---
 
-The plugin provides multiple entry points:
+## 🌍 Real-World Examples
+
+### Example 1: Full-Featured CMS Setup
+
+```typescript
+// src/plugins/index.ts
+import { payloadSidebar } from 'payload-sidebar-plugin'
+import { BarChart3, BookOpen, Github, FileCode, Rocket } from 'lucide-react'
+
+export const plugins = [
+  // ... other plugins
+  payloadSidebar({
+    groupOrder: {
+      // Vietnamese
+      'Nội dung': 1,
+      'Người dùng': 2,
+      CRM: 3,
+      'Cấu hình': 10,
+      // English
+      Content: 1,
+      Users: 2,
+      Settings: 10,
+      // Custom
+      'Công cụ': 15,
+      'Tài nguyên': 99,
+    },
+
+    customLinks: [
+      // Internal tools
+      {
+        label: 'System Monitor',
+        href: '/admin/system-monitor',
+        group: 'Công cụ',
+        icon: BarChart3,
+        order: 1,
+      },
+      {
+        label: 'API Explorer',
+        href: '/api',
+        group: 'Công cụ',
+        icon: FileCode,
+        order: 2,
+      },
+      // External resources
+      {
+        label: 'Payload Docs',
+        href: 'https://payloadcms.com/docs',
+        group: 'Tài nguyên',
+        icon: BookOpen,
+        external: true,
+      },
+      {
+        label: 'GitHub Repo',
+        href: 'https://github.com/your-org/your-repo',
+        group: 'Tài nguyên',
+        icon: Github,
+        external: true,
+      },
+      {
+        label: 'Deploy Status',
+        href: 'https://vercel.com/dashboard',
+        group: 'Tài nguyên',
+        icon: Rocket,
+        external: true,
+      },
+    ],
+
+    customGroups: [
+      { label: 'Công cụ', order: 15 },
+      { label: 'Tools', order: 15 },
+      { label: 'Tài nguyên', order: 99, defaultOpen: false },
+      { label: 'Resources', order: 99, defaultOpen: false },
+    ],
+
+    enablePinning: true,
+    pinnedStorage: 'preferences',
+  }),
+]
+```
+
+### Example 2: E-commerce Admin
+
+```typescript
+payloadSidebar({
+  groupOrder: {
+    Products: 1,
+    Orders: 2,
+    Customers: 3,
+    Analytics: 4,
+    Settings: 99,
+  },
+
+  customLinks: [
+    {
+      label: 'Sales Dashboard',
+      href: '/admin/sales-dashboard',
+      group: 'Analytics',
+      icon: 'chart',
+    },
+    {
+      label: 'Inventory',
+      href: '/admin/inventory',
+      group: 'Products',
+      order: 0, // Appears first in Products group
+    },
+    {
+      label: 'Stripe Dashboard',
+      href: 'https://dashboard.stripe.com',
+      group: 'External',
+      external: true,
+    },
+    {
+      label: 'Shipping Portal',
+      href: 'https://shippo.com/dashboard',
+      group: 'External',
+      external: true,
+    },
+  ],
+
+  customGroups: [
+    { label: 'Analytics', order: 4 },
+    { label: 'External', order: 100, defaultOpen: false },
+  ],
+})
+```
+
+### Example 3: Multi-tenant SaaS
+
+```typescript
+payloadSidebar({
+  groupOrder: {
+    Tenants: 1,
+    Users: 2,
+    Billing: 3,
+    System: 99,
+  },
+
+  customLinks: [
+    {
+      label: 'Tenant Overview',
+      href: '/admin/tenants/overview',
+      group: 'Tenants',
+      order: 0,
+    },
+    {
+      label: 'Usage Metrics',
+      href: '/admin/metrics',
+      group: 'System',
+    },
+    {
+      label: 'Billing Portal',
+      href: 'https://billing.stripe.com',
+      group: 'Billing',
+      external: true,
+    },
+  ],
+})
+```
+
+---
+
+## 📚 API Reference
+
+### Exports
 
 ```typescript
 // Main plugin
 import { payloadSidebar } from 'payload-sidebar-plugin'
 
-// Client components (with 'use client')
+// Client components
 import {
   SidebarBadgeProvider,
   CustomNavClient,
@@ -882,75 +872,110 @@ import {
   PinnedSection,
 } from 'payload-sidebar-plugin/components'
 
-// Hooks (with 'use client')
+// Hooks
 import { useBadge, usePinnedNav } from 'payload-sidebar-plugin/hooks'
 
 // Server components (RSC)
 import { CustomNav } from 'payload-sidebar-plugin/rsc'
 ```
 
-## TypeScript
-
-The plugin is fully typed. Import types as needed:
+### Types
 
 ```typescript
 import type {
   PayloadSidebarPluginOptions,
+  CustomLink,
+  CustomGroup,
   NavEntity,
   PinnedItem,
   BadgeConfig,
-  CustomLink,
-  CustomGroup,
+  BadgeColor,
 } from 'payload-sidebar-plugin'
 ```
 
-## Troubleshooting
+### useBadge Hook
 
-### Plugin not showing custom Nav
+```tsx
+import { useBadge } from 'payload-sidebar-plugin/hooks'
 
-Make sure to regenerate the import map after adding the plugin:
+function MyComponent() {
+  const badge = useBadge('posts')
+  // Returns { count: 5, color: 'blue' } or null
 
-```bash
-npx payload generate:importmap
+  if (badge) {
+    return <span className={`badge--${badge.color}`}>{badge.count}</span>
+  }
+  return null
+}
 ```
+
+### usePinnedNav Hook
+
+```tsx
+import { usePinnedNav } from 'payload-sidebar-plugin/hooks'
+
+function MyComponent() {
+  const {
+    pinnedItems, // Array of pinned items
+    loading, // Loading state
+    isPinned, // Check if item is pinned
+    pinItem, // Pin an item
+    unpinItem, // Unpin an item
+    togglePin, // Toggle pin state
+    refresh, // Refresh pinned items
+  } = usePinnedNav()
+}
+```
+
+---
+
+## ❓ Troubleshooting
+
+### Plugin not showing custom navigation
+
+1. Regenerate the import map:
+   ```bash
+   npx payload generate:importmap
+   ```
+2. Clear Next.js cache:
+   ```bash
+   rm -rf .next && pnpm dev
+   ```
+
+### Custom links not appearing
+
+1. Check that `customLinks` array is properly formatted
+2. Verify `group` property matches a group in `customGroups` or existing Payload groups
+3. Check browser console for errors
 
 ### Badges not appearing
 
-1. Ensure you've wrapped your admin layout with `SidebarBadgeProvider`
-2. Check that badge keys match your collection/global slugs
-3. Verify the count is greater than 0
+1. Ensure `SidebarBadgeProvider` is registered in `admin.components.providers`
+2. Check that badge keys match collection/global slugs exactly
+3. Verify count is greater than 0
 
 ### Pinned items not persisting
 
-If using `pinnedStorage: 'preferences'`:
+For `pinnedStorage: 'preferences'`:
 
-1. Verify API routes are correctly implemented
+1. Verify all 4 API routes are created (`/api/nav/pinned`, `/api/nav/pin`, `/api/nav/unpin`, `/api/nav/reorder`)
 2. Check user is authenticated
-3. Ensure `payload-preferences` collection exists
+3. Check browser console for API errors
 
-If using `pinnedStorage: 'localStorage'`:
+For `pinnedStorage: 'localStorage'`:
 
 1. Check browser supports localStorage
 2. Verify no privacy extensions blocking storage
 
 ### Style conflicts
 
-If styles conflict with your theme:
-
 1. Use a custom `classPrefix` to namespace classes
-2. Override specific CSS variables in your admin CSS
+2. Override specific CSS variables
+3. Use browser DevTools to inspect conflicting styles
 
-## Contributing
+---
 
-Contributions are welcome! Please:
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
-
-## Development
+## 🛠️ Development
 
 ```bash
 # Install dependencies
@@ -966,54 +991,36 @@ pnpm dev
 pnpm typecheck
 ```
 
-## License
+---
+
+## 📄 License
 
 MIT © [Kari](https://github.com/tatsuyakari1203)
 
-## Changelog
+---
+
+## 📝 Changelog
 
 ### 1.2.0
 
-- ✨ Added `customLinks` option to add custom navigation links
-- ✨ Added `customGroups` option to define custom navigation groups
-- ✨ Support for external links with automatic detection and new tab opening
-- ✨ Custom links can use icon keys or Lucide icon components
-- ✨ Custom links are pinnable by default
-- 📝 Updated documentation with comprehensive custom links examples
+- ✨ Added `customLinks` option for custom navigation links
+- ✨ Added `customGroups` option for custom groups
+- ✨ Support for external links with auto-detection
+- ✨ Custom links are pinnable
+- 🐛 Fixed options not being passed to RSC components
+- 📝 Comprehensive documentation with real-world examples
 
-### 1.1.4
+### 1.1.x
 
-- Fixed badge blur/fuzzy rendering with crisp CSS properties
-- Removed pulse animation that caused visual artifacts
-- Added GPU acceleration for sharp text rendering
-
-### 1.1.3
-
-- Fixed React Hooks order error in PinnedSection
-- Extracted PinnedItemLink component for proper hook usage
-
-### 1.1.2
-
-- Fixed SSR "document is not defined" error
-- Added StyleInjector component with useEffect for client-side style injection
-
-### 1.1.1
-
-- Fixed SCSS styles not loading (changed to style injection)
-
-### 1.1.0
-
-- Refactored for proper server/client component bundling
-- Split RSC and client components into separate entry points
-- Plugin auto-sets Nav component path (no wrapper file needed)
-- No more need for `transpilePackages` in consuming projects
-- Comprehensive documentation with examples
+- Fixed badge rendering issues
+- Fixed React Hooks order errors
+- Fixed SSR compatibility
+- Improved style injection
 
 ### 1.0.0
 
 - Initial release
 - Sortable navigation groups
-- Pinnable items with preferences/localStorage storage
+- Pinnable items
 - Multi-color badge support
 - Full TypeScript support
-- Compatible with Payload CMS 3.x, Next.js 14/15, React 18/19
