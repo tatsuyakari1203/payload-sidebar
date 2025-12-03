@@ -46,6 +46,8 @@ import {
   HelpCircle,
   Info,
   BookMarked,
+  Github,
+  Rocket,
 } from 'lucide-react'
 import type { IconComponent } from './types'
 
@@ -182,6 +184,12 @@ export const DEFAULT_ICONS: Record<string, IconComponent> = {
   documentation: BookMarked,
   api: Terminal,
   custom: Sparkles,
+
+  // Common social/dev icons
+  github: Github,
+  rocket: Rocket,
+  chart: BarChart3,
+  book: BookOpen,
 }
 
 // ============================================================================
