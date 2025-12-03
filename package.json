@@ -1,6 +1,6 @@
 {
   "name": "payload-sidebar-plugin",
-  "version": "1.1.8",
+  "version": "1.1.9",
   "description": "Sortable navigation sidebar with pinning and multi-color badge support for Payload CMS 3.x",
   "author": "Kari",
   "license": "MIT",
