@@ -2,6 +2,19 @@ import type { Config } from 'payload'
 import type { CustomLink, CustomGroup, IconComponent } from '../types'
 
 /**
+ * Serializable custom link (icon as string key)
+ */
+export interface SerializableCustomLink {
+  label: string
+  href: string
+  group?: string
+  icon?: string // Icon key instead of component
+  external?: boolean
+  pinnable?: boolean
+  order?: number
+}
+
+/**
  * Plugin options for Payload Sidebar
  */
 export interface PayloadSidebarPluginOptions {
@@ -61,13 +74,57 @@ export interface PayloadSidebarPluginOptions {
   cssVariables?: Record<string, string>
 }
 
-// Global options storage for server component access
-let globalPluginOptions: PayloadSidebarPluginOptions = {}
+/**
+ * Serializable version of plugin options (stored in config.custom)
+ */
+export interface SerializablePluginOptions {
+  groupOrder?: Record<string, number>
+  customLinks?: SerializableCustomLink[]
+  customGroups?: CustomGroup[]
+  enablePinning?: boolean
+  pinnedStorage?: 'preferences' | 'localStorage'
+  classPrefix?: string
+  cssVariables?: Record<string, string>
+}
 
 /**
- * Get the current plugin options (for use in server components)
+ * Config key for storing plugin options
  */
-export const getPluginOptions = (): PayloadSidebarPluginOptions => globalPluginOptions
+export const PLUGIN_OPTIONS_KEY = 'payloadSidebarOptions'
+
+/**
+ * Get the current plugin options from Payload config
+ */
+export const getPluginOptions = (config: Config): SerializablePluginOptions => {
+  return (config.custom?.[PLUGIN_OPTIONS_KEY] as SerializablePluginOptions) || {}
+}
+
+/**
+ * Serialize CustomLink to SerializableCustomLink
+ * Converts icon components to string keys
+ */
+function serializeCustomLink(link: CustomLink): SerializableCustomLink {
+  let iconKey: string | undefined
+
+  if (link.icon) {
+    // If icon is a component, try to get its displayName or name
+    if (typeof link.icon === 'function') {
+      iconKey = (link.icon as { displayName?: string }).displayName || link.icon.name || 'custom'
+    } else {
+      iconKey = String(link.icon)
+    }
+  }
+
+  return {
+    label: link.label,
+    href: link.href,
+    group: link.group,
+    icon: iconKey,
+    external: link.external,
+    pinnable: link.pinnable,
+    order: link.order,
+  }
+}
 
 /**
  * Payload Sidebar Plugin
@@ -97,9 +154,6 @@ export const getPluginOptions = (): PayloadSidebarPluginOptions => globalPluginO
  * ```
  */
 export const payloadSidebar = (options: PayloadSidebarPluginOptions = {}) => {
-  // Store options globally for server component access
-  globalPluginOptions = options
-
   return (incomingConfig: Config): Config => {
     const config = { ...incomingConfig }
 
@@ -108,8 +162,22 @@ export const payloadSidebar = (options: PayloadSidebarPluginOptions = {}) => {
     config.admin.components = config.admin.components || {}
 
     // Set custom Nav component using the bundled RSC export
-    // This follows Payload's pattern: 'package/rsc#ExportName'
     config.admin.components.Nav = 'payload-sidebar-plugin/rsc#CustomNav'
+
+    // Serialize options and store in config.custom
+    // This allows RSC to access options via payload.config
+    const serializableOptions: SerializablePluginOptions = {
+      groupOrder: options.groupOrder,
+      customLinks: options.customLinks?.map(serializeCustomLink),
+      customGroups: options.customGroups,
+      enablePinning: options.enablePinning,
+      pinnedStorage: options.pinnedStorage,
+      classPrefix: options.classPrefix,
+      cssVariables: options.cssVariables,
+    }
+
+    config.custom = config.custom || {}
+    config.custom[PLUGIN_OPTIONS_KEY] = serializableOptions
 
     return config
   }

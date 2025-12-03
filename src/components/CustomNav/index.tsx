@@ -12,8 +12,8 @@ import React from 'react'
 import { CustomNavClient } from 'payload-sidebar-plugin/components'
 import { sortGroups } from '../../utils/sortGroups'
 import { DEFAULT_GROUP_ORDER, DEFAULT_BADGE_COLORS } from '../../defaults'
-import { getPluginOptions } from '../../plugin/index'
-import type { NavEntity, NavGroup, CustomLink, CustomGroup } from '../../types'
+import { getPluginOptions, type SerializableCustomLink } from '../../plugin/index'
+import type { NavEntity, NavGroup, CustomGroup } from '../../types'
 
 export type CustomNavProps = {
   req?: PayloadRequest
@@ -43,9 +43,9 @@ async function getNavPrefs(
 }
 
 /**
- * Convert CustomLink to NavEntity
+ * Convert SerializableCustomLink to NavEntity
  */
-function customLinkToNavEntity(link: CustomLink): NavEntity {
+function customLinkToNavEntity(link: SerializableCustomLink): NavEntity {
   // Generate a unique slug for custom links
   const slug = `custom-${link.label.toLowerCase().replace(/\s+/g, '-')}`
 
@@ -62,7 +62,7 @@ function customLinkToNavEntity(link: CustomLink): NavEntity {
     label: link.label,
     href: link.href,
     external: isExternal,
-    icon: link.icon,
+    icon: link.icon, // Now a string key
     pinnable: link.pinnable ?? true,
     order: link.order ?? 50,
   }
@@ -73,7 +73,7 @@ function customLinkToNavEntity(link: CustomLink): NavEntity {
  */
 function mergeCustomLinks(
   groups: NavGroup[],
-  customLinks: CustomLink[] = [],
+  customLinks: SerializableCustomLink[] = [],
   customGroups: CustomGroup[] = [],
 ): NavGroup[] {
   if (!customLinks.length && !customGroups.length) {
@@ -169,12 +169,13 @@ export async function CustomNav(props: CustomNavProps): Promise<React.ReactEleme
     visibleEntities,
   } = props
 
-  // Get plugin options from global storage
-  const pluginOptions = getPluginOptions()
-
   if (!payload?.config) {
     return null
   }
+
+  // Get plugin options from config.custom (serialized by plugin)
+  // Cast to Config since SanitizedConfig extends it
+  const pluginOptions = getPluginOptions(payload.config as unknown as import('payload').Config)
 
   // Merge plugin options with defaults
   const groupOrder = buildGroupOrder(
