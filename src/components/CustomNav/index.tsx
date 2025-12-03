@@ -70,6 +70,7 @@ function customLinkToNavEntity(link: SerializableCustomLink): NavEntity {
 
 /**
  * Merge custom links into navigation groups
+ * Supports i18n via group aliases
  */
 function mergeCustomLinks(
   groups: NavGroup[],
@@ -80,15 +81,33 @@ function mergeCustomLinks(
     return groups
   }
 
+  // Build alias map: alias -> primary label
+  const aliasMap = new Map<string, string>()
+  for (const customGroup of customGroups) {
+    // Map the group's own label to itself
+    aliasMap.set(customGroup.label, customGroup.label)
+    // Map all aliases to the primary label
+    if (customGroup.aliases) {
+      for (const alias of customGroup.aliases) {
+        aliasMap.set(alias, customGroup.label)
+      }
+    }
+  }
+
   // Create a mutable copy of groups
   const mergedGroups = groups.map(g => ({
     ...g,
     entities: [...g.entities],
   }))
 
-  // Track existing group labels
+  // Track existing group labels (use primary label via alias map)
   const groupMap = new Map<string, NavGroup>()
-  mergedGroups.forEach(g => groupMap.set(g.label, g))
+  mergedGroups.forEach(g => {
+    const primaryLabel = aliasMap.get(g.label) || g.label
+    if (!groupMap.has(primaryLabel)) {
+      groupMap.set(primaryLabel, g)
+    }
+  })
 
   // Create custom groups first (if they don't exist)
   for (const customGroup of customGroups) {
@@ -102,21 +121,23 @@ function mergeCustomLinks(
     }
   }
 
-  // Add custom links to their respective groups
+  // Add custom links to their respective groups (using alias resolution)
   for (const link of customLinks) {
-    const groupLabel = link.group ?? 'Custom'
+    const linkGroupLabel = link.group ?? 'Custom'
+    // Resolve to primary group label if it's an alias
+    const primaryGroupLabel = aliasMap.get(linkGroupLabel) || linkGroupLabel
     const navEntity = customLinkToNavEntity(link)
 
-    let targetGroup = groupMap.get(groupLabel)
+    let targetGroup = groupMap.get(primaryGroupLabel)
 
     // Create group if it doesn't exist
     if (!targetGroup) {
       targetGroup = {
-        label: groupLabel,
+        label: primaryGroupLabel,
         entities: [],
       }
       mergedGroups.push(targetGroup)
-      groupMap.set(groupLabel, targetGroup)
+      groupMap.set(primaryGroupLabel, targetGroup)
     }
 
     targetGroup.entities.push(navEntity)
@@ -131,7 +152,21 @@ function mergeCustomLinks(
     })
   }
 
-  return mergedGroups
+  // Remove empty groups that are just aliases (not the primary)
+  const primaryLabels = new Set(customGroups.map(g => g.label))
+  const filteredGroups = mergedGroups.filter(group => {
+    // Keep groups that have entities
+    if (group.entities.length > 0) return true
+    // Keep groups that are primary labels
+    if (primaryLabels.has(group.label)) return true
+    // Keep groups that are NOT aliases of something else
+    const primaryLabel = aliasMap.get(group.label)
+    if (!primaryLabel || primaryLabel === group.label) return true
+    // Filter out empty alias groups
+    return false
+  })
+
+  return filteredGroups
 }
 
 /**

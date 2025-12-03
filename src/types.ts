@@ -74,6 +74,13 @@ export interface CustomGroup {
   label: string
 
   /**
+   * Alternative labels for i18n support
+   * Links with these group labels will be merged into this group
+   * @example { label: 'Resources', aliases: ['Tài nguyên', 'Ressources'] }
+   */
+  aliases?: string[]
+
+  /**
    * Sort order priority (lower = appears first)
    * Overrides groupOrder setting for this group
    * @default 50
