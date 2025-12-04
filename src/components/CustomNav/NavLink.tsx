@@ -3,10 +3,11 @@
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
 import React from 'react'
-import { Pin, Check, File, ExternalLink } from 'lucide-react'
+import { Pin, Check, File, ExternalLink, LucideIcon } from 'lucide-react'
 import { useNavConfig } from '../NavContext'
 import { useBadge, getBadgeColorClass } from '../../hooks/useBadge'
 import type { IconComponent } from '../../types'
+import { DynamicIcon, IconName } from 'lucide-react/dynamic'
 
 interface NavLinkProps {
   href: string
@@ -32,7 +33,7 @@ export const NavLink: React.FC<NavLinkProps> = ({
   customIcon,
 }) => {
   const pathname = usePathname()
-  const { icons, classPrefix, enablePinning } = useNavConfig()
+  const { icons, classPrefix, enablePinning, customIcons } = useNavConfig()
   const badge = useBadge(slug || '')
 
   // Check if current path matches or starts with this link's href
@@ -42,13 +43,22 @@ export const NavLink: React.FC<NavLinkProps> = ({
   // Get icon: custom icon > icon from config > default File icon
   const extractedSlug = slug || id.replace('nav-global-', '').replace('nav-custom-', '').replace('nav-', '')
 
-  let Icon: IconComponent = File
-  if (customIcon) {
+  let Icon: IconComponent = File;
+  /**
+   * Controls if we are using a dynamic icon from lucide-react/dynamic
+   */
+  let isDynamicIcon:boolean | IconName = false;
+
+  // First priority: check if this slug has a dynamic icon in customIcons
+  if (customIcons && customIcons[extractedSlug]) {
+    isDynamicIcon = customIcons[extractedSlug];
+  }
+  // If no dynamic icon found, use static icons
+  else if (customIcon) {
     if (typeof customIcon === 'string') {
-      // Icon key from defaults
       Icon = icons[customIcon] || icons[extractedSlug] || File
     } else {
-      // Custom React component
+      // Custom React component. Doesn't work, because components are not serializable from server to client
       Icon = customIcon
     }
   } else {
@@ -60,7 +70,11 @@ export const NavLink: React.FC<NavLinkProps> = ({
 
   const linkContent = (
     <>
-      <Icon className={`${classPrefix}__link-icon`} size={18} />
+     {isDynamicIcon ? (
+        <DynamicIcon className={`${classPrefix}__link-icon`} size={18} name={isDynamicIcon} />
+      ) : (
+       <Icon className={`${classPrefix}__link-icon`} size={18} />
+    )}
       {children}
       {isExternalLink && (
         <ExternalLink className={`${classPrefix}__link-external-icon`} size={12} />

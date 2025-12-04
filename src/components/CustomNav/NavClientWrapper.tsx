@@ -56,6 +56,7 @@ export const NavClientWrapper: React.FC<NavClientWrapperProps> = (props) => {
     enablePinning: navConfig.enablePinning,
     pinnedStorage: navConfig.pinnedStorage,
     cssVariables: navConfig.cssVariables,
+    cu
   }
 
   return (

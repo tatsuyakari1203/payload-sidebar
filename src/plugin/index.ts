@@ -1,5 +1,5 @@
 import type { Config } from 'payload'
-import type { CustomLink, CustomGroup, IconComponent } from '../types'
+import type { CustomLink, CustomGroup, IconComponentSerializable } from '../types'
 
 /**
  * Serializable custom link (icon as string key)
@@ -23,9 +23,9 @@ export interface PayloadSidebarPluginOptions {
    */
   groupOrder?: Record<string, number>
   /**
-   * Custom icons for collections/globals
+   * Custom icons for collections/globals, using lucide-react/dynamic icon names.
    */
-  icons?: Record<string, IconComponent>
+  icons?: Record<string, IconComponentSerializable>
 
   /**
    * Custom navigation links
@@ -85,6 +85,7 @@ export interface SerializablePluginOptions {
   pinnedStorage?: 'preferences' | 'localStorage'
   classPrefix?: string
   cssVariables?: Record<string, string>
+  icons?: Record<string, IconComponentSerializable>
 }
 
 /**
@@ -174,6 +175,8 @@ export const payloadSidebar = (options: PayloadSidebarPluginOptions = {}) => {
       pinnedStorage: options.pinnedStorage,
       classPrefix: options.classPrefix,
       cssVariables: options.cssVariables,
+      //Icons are serializable now, using Dynamic icons from lucide
+      icons: options.icons,
     }
 
     config.custom = config.custom || {}
