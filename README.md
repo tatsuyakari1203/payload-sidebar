@@ -457,46 +457,111 @@ payloadSidebar({
 
 ### Need More Icons?
 
-If you need Lucide icons that aren't in the pre-defined ~100 icons, use `SidebarIconProvider` to register them:
+If you need Lucide icons that aren't in the pre-defined ~100 icons, use `SidebarIconProvider` to register them.
+
+The plugin exports everything you need:
+
+```typescript
+import {
+  SidebarIconProvider, // Provider to register custom icons
+  useCustomIcons, // Hook to access custom icons
+  DynamicIcon, // Icon component (for advanced use)
+  DEFAULT_ICON_MAP, // Pre-defined icons map
+  type IconComponent, // Type for icon components
+  type IconName, // Type for icon names
+} from 'payload-sidebar-plugin/components'
+```
 
 #### Step 1: Create an Icon Provider
 
 ```tsx
-// src/components/CustomIconProvider.tsx
+// src/components/SidebarIcons.tsx
 'use client'
 
 import React from 'react'
 import { SidebarIconProvider } from 'payload-sidebar-plugin/components'
 
 // Import any Lucide icons you need that aren't in the default set
-import { Newspaper, Trophy, Gamepad2, Pizza, Plane, Tent, Bike, Cat, Dog } from 'lucide-react'
+import {
+  Rocket,
+  Skull,
+  Martini,
+  Pizza,
+  IceCream,
+  Gamepad2,
+  Compass,
+  Gem,
+  Crown,
+  Flame,
+  Ghost,
+  Cherry,
+  Biohazard,
+  Atom,
+  Bug,
+  Candy,
+  Castle,
+  Croissant,
+  Drama,
+  Fingerprint,
+} from 'lucide-react'
 
-export function CustomIconProvider({ children }: { children: React.ReactNode }) {
-  // Register custom icons with kebab-case keys
-  const customIcons = {
-    newspaper: Newspaper,
-    trophy: Trophy,
-    'gamepad-2': Gamepad2,
-    pizza: Pizza,
-    plane: Plane,
-    tent: Tent,
-    bike: Bike,
-    cat: Cat,
-    dog: Dog,
-  }
+// Register custom icons with kebab-case keys
+const customIcons = {
+  rocket: Rocket,
+  skull: Skull,
+  martini: Martini,
+  pizza: Pizza,
+  'ice-cream': IceCream,
+  'gamepad-2': Gamepad2,
+  compass: Compass,
+  gem: Gem,
+  crown: Crown,
+  flame: Flame,
+  ghost: Ghost,
+  cherry: Cherry,
+  biohazard: Biohazard,
+  atom: Atom,
+  bug: Bug,
+  candy: Candy,
+  castle: Castle,
+  croissant: Croissant,
+  drama: Drama,
+  fingerprint: Fingerprint,
+}
 
+export function SidebarIcons({ children }: { children: React.ReactNode }) {
   return <SidebarIconProvider icons={customIcons}>{children}</SidebarIconProvider>
 }
 ```
 
 #### Step 2: Register as Admin Provider
 
+If you have multiple providers, wrap them together:
+
+```tsx
+// src/components/AdminProviders/index.tsx
+'use client'
+
+import React from 'react'
+import { SidebarIcons } from '@/components/SidebarIcons'
+import { NavBadgeProvider } from '@/components/NavBadgeProvider' // if you have badges
+
+export default function AdminProviders({ children }: { children: React.ReactNode }) {
+  return (
+    <SidebarIcons>
+      <NavBadgeProvider>{children}</NavBadgeProvider>
+    </SidebarIcons>
+  )
+}
+```
+
+Then in `payload.config.ts`:
+
 ```typescript
-// payload.config.ts
 export default buildConfig({
   admin: {
     components: {
-      providers: ['@/components/CustomIconProvider'],
+      providers: ['@/components/AdminProviders'],
     },
   },
 })
@@ -508,11 +573,14 @@ export default buildConfig({
 payloadSidebar({
   icons: {
     // Now you can use your custom icons!
-    'news-articles': 'newspaper',
-    achievements: 'trophy',
-    games: 'gamepad-2',
-    restaurants: 'pizza',
-    travel: 'plane',
+    products: 'pizza', // 🍕 Custom icon
+    orders: 'rocket', // 🚀 Custom icon
+    customers: 'crown', // 👑 Custom icon
+    contacts: 'fingerprint', // 🔍 Custom icon
+    'invitation-cards': 'gem', // 💎 Custom icon
+    guests: 'ghost', // 👻 Custom icon
+    achievements: 'flame', // 🔥 Custom icon
+    games: 'gamepad-2', // 🎮 Custom icon
   },
 })
 ```
@@ -522,6 +590,17 @@ payloadSidebar({
 ```bash
 npx payload generate:importmap
 ```
+
+#### How It Works
+
+1. **Default Icons (~100)**: The plugin ships with ~100 commonly used Lucide icons
+2. **Custom Icons**: `SidebarIconProvider` lets you register additional icons
+3. **Priority**: Custom icons override default icons with the same name
+4. **Fallback**: If an icon name isn't found, a generic `File` icon is shown
+
+#### Browse All Lucide Icons
+
+Visit [lucide.dev/icons](https://lucide.dev/icons) to browse 1500+ available icons. Import any icon and register it with `SidebarIconProvider`!
 
 ### Real-World Example: Full CRM with Custom Icons
 
@@ -1448,6 +1527,12 @@ MIT © [Kari](https://github.com/tatsuyakari1203)
 ---
 
 ## 📝 Changelog
+
+### 1.3.5
+
+- 📝 Updated `SidebarIconProvider` documentation with complete usage example
+- 📦 Exports: `SidebarIconProvider`, `useCustomIcons`, `DynamicIcon`, `DEFAULT_ICON_MAP`, `IconComponent`, `IconName`
+- 🎯 Clear step-by-step guide for adding custom icons beyond the default ~100
 
 ### 1.3.4
 
