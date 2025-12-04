@@ -14,7 +14,7 @@ const external = [
   '@payloadcms/ui/elements/RenderServerComponent',
   '@payloadcms/ui/shared',
   '@payloadcms/translations',
-  'lucide-react',
+  /^lucide-react/,  // Match lucide-react and all sub-paths
 ]
 
 export default defineConfig([

@@ -1,4 +1,5 @@
 import type { LucideIcon } from 'lucide-react'
+import { IconName } from 'lucide-react/dynamic'
 
 // ============================================================================
 // Badge Types
@@ -164,9 +165,14 @@ export interface NavGroup {
 // ============================================================================
 
 /**
- * Icon component type - Lucide icon or custom component
+ * Icon component  LucideIcon component or custom React component
  */
 export type IconComponent = LucideIcon | React.ComponentType<{ size?: number; className?: string }>
+
+/**
+ * Type for config icons, which must be serializable, will be used with DynamicIcon from 'lucide-react/dynamic'
+ */
+export type IconComponentSerializable = IconName
 
 /**
  * Main plugin configuration options
@@ -185,7 +191,7 @@ export interface PayloadSidebarOptions {
    * Merge với default icons
    * @example { 'my-collection': MyIcon }
    */
-  icons?: Record<string, IconComponent>
+  icons?: Record<string, IconComponentSerializable>
 
   /**
    * Custom navigation links
@@ -279,5 +285,15 @@ export interface NavConfigContextValue {
   pinnedStorage: 'preferences' | 'localStorage'
   cssVariables: Record<string, string>
   customLinks: CustomLink[]
+  customIcons?: Record<string, IconComponentSerializable>
   onPinChange?: (item: PinnedItem, action: 'pin' | 'unpin') => void
+}
+
+export interface SerializableNavConfig {
+  classPrefix: string
+  enablePinning: boolean
+  pinnedStorage: 'preferences' | 'localStorage'
+  cssVariables: Record<string, string>
+  customLinks: CustomLink[]
+  icons?: Record<string, IconComponentSerializable>
 }

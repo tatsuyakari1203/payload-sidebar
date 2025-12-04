@@ -36,6 +36,9 @@ export const getPluginOptions = (): PayloadSidebarOptions => globalPluginOptions
  * })
  * ```
  */
+/**
+ * @deprecated This file is not using anymore, actual plugin export in src/plugin/index.ts
+ */
 export const payloadSidebar = (options: PayloadSidebarOptions = {}) => {
   // Store options globally for server component access
   globalPluginOptions = options

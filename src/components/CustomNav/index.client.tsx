@@ -7,20 +7,14 @@ import { StyleInjector } from './StyleInjector'
 import { NavContent } from './NavContent'
 import { NavConfigProvider } from '../NavContext'
 import { DEFAULT_ICONS } from '../../defaults'
-import type { NavEntity, NavConfigContextValue, CustomLink } from '../../types'
+import type { NavEntity, NavConfigContextValue, CustomLink, IconComponentSerializable, SerializableNavConfig } from '../../types'
 
 interface NavGroupData {
   label: string
   entities: NavEntity[]
 }
 
-interface SerializableNavConfig {
-  classPrefix: string
-  enablePinning: boolean
-  pinnedStorage: 'preferences' | 'localStorage'
-  cssVariables: Record<string, string>
-  customLinks: CustomLink[]
-}
+
 
 interface NavClientWrapperProps {
   classPrefix?: string
@@ -53,6 +47,7 @@ export const CustomNavClient: React.FC<NavClientWrapperProps> = (props) => {
   // Build full config with icons (which can't be serialized from server)
   const fullConfig: NavConfigContextValue = {
     icons: DEFAULT_ICONS,
+    customIcons: navConfig.icons || {},
     classPrefix: navConfig.classPrefix,
     enablePinning: navConfig.enablePinning,
     pinnedStorage: navConfig.pinnedStorage,

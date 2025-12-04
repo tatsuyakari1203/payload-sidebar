@@ -13,7 +13,7 @@ import { CustomNavClient } from 'payload-sidebar-plugin/components'
 import { sortGroups } from '../../utils/sortGroups'
 import { DEFAULT_GROUP_ORDER, DEFAULT_BADGE_COLORS } from '../../defaults'
 import { getPluginOptions, type SerializableCustomLink } from '../../plugin/index'
-import type { NavEntity, NavGroup, CustomGroup } from '../../types'
+import type { NavEntity, NavGroup, CustomGroup, SerializableNavConfig } from '../../types'
 
 export type CustomNavProps = {
   req?: PayloadRequest
@@ -224,6 +224,7 @@ export async function CustomNav(props: CustomNavProps): Promise<React.ReactEleme
   const cssVariables = { ...DEFAULT_BADGE_COLORS, ...pluginOptions.cssVariables }
   const customLinks = pluginOptions.customLinks ?? []
   const customGroups = pluginOptions.customGroups ?? []
+  const customIcons = pluginOptions.icons ?? {}
 
   const {
     admin: {
@@ -279,12 +280,13 @@ export async function CustomNav(props: CustomNavProps): Promise<React.ReactEleme
   const navPreferences = await getNavPrefs(req)
 
   // Serializable config for client components (no functions, no React components)
-  const navConfig = {
+  const navConfig:SerializableNavConfig = {
     classPrefix,
     enablePinning,
     pinnedStorage,
     cssVariables,
     customLinks,
+    icons: customIcons, // A map of string keys to icon names
   }
 
   const LogoutComponent = RenderServerComponent({

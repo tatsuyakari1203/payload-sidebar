@@ -7,6 +7,7 @@ import { usePathname } from 'next/navigation'
 import { useNavConfig } from '../NavContext'
 import { useBadge, getBadgeColorClass } from '../../hooks/useBadge'
 import type { PinnedItem, IconComponent } from '../../types'
+import { DynamicIcon, IconName } from 'lucide-react/dynamic'
 
 interface PinnedNavItem extends PinnedItem {
   label: string
@@ -27,10 +28,12 @@ const PinnedItemLink: React.FC<{
   item: PinnedNavItem
   onUnpin: (slug: string, type: string) => void
   classPrefix: string
-  icons: Record<string, IconComponent>
-}> = ({ item, onUnpin, classPrefix, icons }) => {
+}> = ({ item, onUnpin, classPrefix, }) => {
   const pathname = usePathname()
-  const badge = useBadge(item.slug)
+  const badge = useBadge(item.slug);
+
+
+  const {customIcons, icons} = useNavConfig();
 
   // Check if external link
   const isExternalLink = item.external ||
@@ -42,20 +45,38 @@ const PinnedItemLink: React.FC<{
   const isActive = !isExternalLink && (pathname === item.href || pathname.startsWith(`${item.href}/`))
 
   // Resolve icon
-  let Icon: IconComponent = File
-  if (item.icon) {
-    if (typeof item.icon === 'string') {
-      Icon = icons[item.icon] || icons[item.slug] || File
+  //TODO: Extract icon resolution logic to a hook or utility function to avoid duplication with NavLink.tsx
+  let Icon: IconComponent = File;
+  /**
+   * Controls if we are using a dynamic icon from lucide-react/dynamic
+   */
+  let isDynamicIcon:boolean | IconName = false;
+  const customIcon = item.icon; // Get custom icon from pinned item to match NavLink logic
+  const extractedSlug = item.slug; // Use item.slug directly for pinned items
+
+  // First priority: check if this slug has a dynamic icon in customIcons
+  if (customIcons && customIcons[extractedSlug]) {
+    isDynamicIcon = customIcons[extractedSlug];
+  }
+  // If no dynamic icon found, use static icons
+  else if (customIcon) {
+    if (typeof customIcon === 'string') {
+      Icon = icons[customIcon] || icons[extractedSlug] || File
     } else {
-      Icon = item.icon
+      // Custom React component. Doesn't work, because components are not serializable from server to client
+      Icon = customIcon
     }
   } else {
-    Icon = icons[item.slug] || File
+    Icon = icons[extractedSlug] || File
   }
 
   const linkContent = (
     <>
-      <Icon className={`${classPrefix}__link-icon`} size={18} />
+       {isDynamicIcon ? (
+        <DynamicIcon className={`${classPrefix}__link-icon`} size={18} name={isDynamicIcon} />
+      ) : (
+       <Icon className={`${classPrefix}__link-icon`} size={18} />
+    )}
       <span className={`${classPrefix}__link-label`}>{item.label}</span>
       {isExternalLink && (
         <ExternalLink className={`${classPrefix}__link-external-icon`} size={12} />
@@ -108,7 +129,7 @@ const PinnedItemLink: React.FC<{
 }
 
 export const PinnedSection: React.FC<PinnedSectionProps> = ({ items, onUnpin }) => {
-  const { icons, classPrefix } = useNavConfig()
+  const { classPrefix } = useNavConfig()
 
   if (items.length === 0) return null
 
@@ -125,7 +146,6 @@ export const PinnedSection: React.FC<PinnedSectionProps> = ({ items, onUnpin }) 
             item={item}
             onUnpin={onUnpin}
             classPrefix={classPrefix}
-            icons={icons}
           />
         ))}
       </div>
