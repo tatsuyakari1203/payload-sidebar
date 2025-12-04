@@ -457,15 +457,130 @@ payloadSidebar({
 
 ### Need More Icons?
 
-If you need an icon that's not in the pre-defined set, you have two options:
+If you need Lucide icons that aren't in the pre-defined ~100 icons, use `SidebarIconProvider` to register them:
 
-**Option 1: Request Addition**
+#### Step 1: Create an Icon Provider
 
-Open an issue on the [GitHub repository](https://github.com/tatsuyakari1203/payload-sidebar) to request additional icons be added to the default set.
+```tsx
+// src/components/CustomIconProvider.tsx
+'use client'
 
-**Option 2: Use Fallback**
+import React from 'react'
+import { SidebarIconProvider } from 'payload-sidebar-plugin/components'
 
-If an icon name is not found, the plugin will display a generic file icon as a fallback. This ensures your navigation always renders correctly.
+// Import any Lucide icons you need that aren't in the default set
+import { Newspaper, Trophy, Gamepad2, Pizza, Plane, Tent, Bike, Cat, Dog } from 'lucide-react'
+
+export function CustomIconProvider({ children }: { children: React.ReactNode }) {
+  // Register custom icons with kebab-case keys
+  const customIcons = {
+    newspaper: Newspaper,
+    trophy: Trophy,
+    'gamepad-2': Gamepad2,
+    pizza: Pizza,
+    plane: Plane,
+    tent: Tent,
+    bike: Bike,
+    cat: Cat,
+    dog: Dog,
+  }
+
+  return <SidebarIconProvider icons={customIcons}>{children}</SidebarIconProvider>
+}
+```
+
+#### Step 2: Register as Admin Provider
+
+```typescript
+// payload.config.ts
+export default buildConfig({
+  admin: {
+    components: {
+      providers: ['@/components/CustomIconProvider'],
+    },
+  },
+})
+```
+
+#### Step 3: Use Custom Icons in Config
+
+```typescript
+payloadSidebar({
+  icons: {
+    // Now you can use your custom icons!
+    'news-articles': 'newspaper',
+    achievements: 'trophy',
+    games: 'gamepad-2',
+    restaurants: 'pizza',
+    travel: 'plane',
+  },
+})
+```
+
+#### Step 4: Generate Import Map
+
+```bash
+npx payload generate:importmap
+```
+
+### Real-World Example: Full CRM with Custom Icons
+
+Here's a complete example from a production CRM project:
+
+```typescript
+// src/plugins/index.ts
+payloadSidebar({
+  icons: {
+    // === COLLECTIONS ===
+    // Content
+    users: 'users-round',
+    posts: 'file-pen',
+    pages: 'layout',
+    media: 'image',
+    files: 'files',
+    categories: 'folder-tree',
+
+    // Forms
+    forms: 'clipboard-list',
+    'form-submissions': 'inbox',
+
+    // Comments & Chat
+    comments: 'message-square',
+    chats: 'message-circle',
+    messages: 'send',
+
+    // CRM Collections
+    contacts: 'contact',
+    'contact-fields': 'list-checks',
+    'contact-notes': 'file-text',
+    deals: 'handshake',
+    leads: 'user-plus',
+    activities: 'activity',
+    tickets: 'clipboard-check',
+    'customer-feedback': 'thumbs-up',
+    'customer-interests': 'star',
+    badges: 'award',
+
+    // Knowledge Base
+    'knowledge-base': 'book-open',
+
+    // === GLOBALS ===
+    header: 'panel-top',
+    footer: 'panel-bottom',
+    'company-info': 'building',
+    'social-links': 'share-2',
+
+    // Dashboards
+    'crm-dashboard': 'layout-dashboard',
+    'chat-dashboard': 'message-square',
+
+    // Settings & Config
+    'ai-config': 'sparkles',
+    'analytics-settings': 'bar-chart-3',
+    'theme-settings': 'palette',
+  },
+})
+```
 
 ---
 
@@ -1333,6 +1448,12 @@ MIT © [Kari](https://github.com/tatsuyakari1203)
 ---
 
 ## 📝 Changelog
+
+### 1.3.4
+
+- ✨ **NEW: `SidebarIconProvider`** - Register custom Lucide icons beyond the default ~100
+- 📦 Export `DynamicIcon`, `DEFAULT_ICON_MAP` for advanced use cases
+- 📝 Added comprehensive documentation with real-world CRM example
 
 ### 1.3.3
 
