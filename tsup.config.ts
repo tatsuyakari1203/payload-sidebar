@@ -15,7 +15,9 @@ const external = [
   '@payloadcms/ui/shared',
   '@payloadcms/translations',
   'lucide-react',
-  'lucide-react/dynamicIconImports', // For dynamic icon loading
+  // Note: lucide-react/dynamicIconImports is intentionally NOT external
+  // It needs to be bundled because many bundlers can't resolve subpath imports
+  // without an "exports" field in lucide-react's package.json
 ]
 
 export default defineConfig([
