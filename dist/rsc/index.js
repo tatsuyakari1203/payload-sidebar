@@ -210,13 +210,13 @@ async function CustomNav(props) {
   const customGroups = pluginOptions.customGroups ?? [];
   const icons = pluginOptions.icons ?? {};
   const {
-    admin: {
-      components: { afterNavLinks, beforeNavLinks, logout }
-    },
+    admin: { components },
     routes: { admin: adminRoute },
     collections,
     globals
   } = payload.config;
+  const navComponents = components;
+  const { afterNav, afterNavLinks, beforeNav, beforeNavLinks, logout } = navComponents;
   const groups = groupNavItems(
     [
       ...collections.filter(({ slug }) => visibleEntities?.collections?.includes(slug)).map(
@@ -254,6 +254,23 @@ async function CustomNav(props) {
     customLinks,
     icons
   };
+  const BeforeNavComponent = RenderServerComponent({
+    clientProps: {
+      documentSubViewType,
+      viewType
+    },
+    Component: beforeNav,
+    importMap: payload.importMap,
+    serverProps: {
+      i18n,
+      locale,
+      params,
+      payload,
+      permissions,
+      searchParams,
+      user
+    }
+  });
   const LogoutComponent = RenderServerComponent({
     clientProps: {
       documentSubViewType,
@@ -261,6 +278,23 @@ async function CustomNav(props) {
     },
     Component: logout?.Button,
     Fallback: Logout,
+    importMap: payload.importMap,
+    serverProps: {
+      i18n,
+      locale,
+      params,
+      payload,
+      permissions,
+      searchParams,
+      user
+    }
+  });
+  const AfterNavComponent = RenderServerComponent({
+    clientProps: {
+      documentSubViewType,
+      viewType
+    },
+    Component: afterNav,
     importMap: payload.importMap,
     serverProps: {
       i18n,
@@ -314,8 +348,10 @@ async function CustomNav(props) {
       adminRoute,
       navPreferences,
       navConfig,
+      beforeNav: BeforeNavComponent,
       beforeNavLinks: BeforeNavLinksComponent,
       afterNavLinks: AfterNavLinksComponent,
+      afterNav: AfterNavComponent,
       logoutComponent: LogoutComponent
     }
   );

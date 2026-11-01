@@ -129,8 +129,10 @@ interface NavClientWrapperProps {
         }>;
     } | null;
     navConfig: SerializableNavConfig;
+    beforeNav?: React$1.ReactElement;
     beforeNavLinks?: React$1.ReactElement;
     afterNavLinks?: React$1.ReactElement;
+    afterNav?: React$1.ReactElement;
     logoutComponent?: React$1.ReactElement;
 }
 /**
