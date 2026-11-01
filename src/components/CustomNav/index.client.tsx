@@ -29,8 +29,10 @@ interface NavClientWrapperProps {
   adminRoute: string
   navPreferences: { groups?: Record<string, { open?: boolean }> } | null
   navConfig: SerializableNavConfig
+  beforeNav?: React.ReactElement
   beforeNavLinks?: React.ReactElement
   afterNavLinks?: React.ReactElement
+  afterNav?: React.ReactElement
   logoutComponent?: React.ReactElement
 }
 
@@ -44,8 +46,10 @@ export const CustomNavClient: React.FC<NavClientWrapperProps> = (props) => {
     adminRoute,
     navPreferences,
     navConfig,
+    beforeNav,
     beforeNavLinks,
     afterNavLinks,
+    afterNav,
     logoutComponent,
   } = props
 
@@ -83,6 +87,7 @@ export const CustomNavClient: React.FC<NavClientWrapperProps> = (props) => {
         {...(!navOpen ? { inert: true } : {})}
       >
         <div className={`${classPrefix}__scroll`} ref={navRef as React.RefObject<HTMLDivElement>}>
+          {beforeNav}
           <nav className={`${classPrefix}__wrap`}>
             {beforeNavLinks}
 
@@ -97,6 +102,7 @@ export const CustomNavClient: React.FC<NavClientWrapperProps> = (props) => {
 
             <div className={`${classPrefix}__controls`}>{logoutComponent}</div>
           </nav>
+          {afterNav}
         </div>
       </aside>
     </NavConfigProvider>

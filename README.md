@@ -51,6 +51,9 @@ export default buildConfig({
 ```
 
 That's it! The plugin will automatically replace the default navigation with the enhanced sidebar.
+Configured Payload navigation components (`beforeNav`, `beforeNavLinks`, `afterNavLinks`, and
+`afterNav`) continue to render in their corresponding positions. This includes components added by
+other plugins, such as the tenant selector from Payload's Multi Tenant Plugin.
 
 ---
 

@@ -26,8 +26,8 @@ export default defineConfig([
     entry: {
       'components/index': 'src/components/index.ts',
     },
-    format: ['esm'],
-    dts: true,
+    format: ['cjs','esm'],
+    dts: { resolve: true },
     splitting: false,
     sourcemap: true,
     clean: true,
@@ -49,7 +49,7 @@ export default defineConfig([
     entry: {
       'hooks/index': 'src/hooks/index.ts',
     },
-    format: ['esm'],
+    format: ['cjs','esm'],
     dts: true,
     splitting: false,
     sourcemap: true,
@@ -69,7 +69,7 @@ export default defineConfig([
       'rsc/index': 'src/server/index.ts',
       'plugin/index': 'src/plugin/index.ts',
     },
-    format: ['esm'],
+    format: ['esm','cjs'],
     dts: true,
     splitting: false,
     sourcemap: true,

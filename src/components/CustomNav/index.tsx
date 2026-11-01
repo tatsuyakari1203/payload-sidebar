@@ -227,13 +227,17 @@ export async function CustomNav(props: CustomNavProps): Promise<React.ReactEleme
   const icons = pluginOptions.icons ?? {}
 
   const {
-    admin: {
-      components: { afterNavLinks, beforeNavLinks, logout },
-    },
+    admin: { components },
     routes: { admin: adminRoute },
     collections,
     globals,
   } = payload.config
+
+  const navComponents = components as typeof components & {
+    afterNav?: typeof components.afterNavLinks
+    beforeNav?: typeof components.beforeNavLinks
+  }
+  const { afterNav, afterNavLinks, beforeNav, beforeNavLinks, logout } = navComponents
 
   // Group nav items
   const groups = groupNavItems(
@@ -289,6 +293,24 @@ export async function CustomNav(props: CustomNavProps): Promise<React.ReactEleme
     icons,
   }
 
+  const BeforeNavComponent = RenderServerComponent({
+    clientProps: {
+      documentSubViewType,
+      viewType,
+    },
+    Component: beforeNav,
+    importMap: payload.importMap,
+    serverProps: {
+      i18n,
+      locale,
+      params,
+      payload,
+      permissions,
+      searchParams,
+      user,
+    },
+  })
+
   const LogoutComponent = RenderServerComponent({
     clientProps: {
       documentSubViewType,
@@ -296,6 +318,24 @@ export async function CustomNav(props: CustomNavProps): Promise<React.ReactEleme
     },
     Component: logout?.Button,
     Fallback: Logout,
+    importMap: payload.importMap,
+    serverProps: {
+      i18n,
+      locale,
+      params,
+      payload,
+      permissions,
+      searchParams,
+      user,
+    },
+  })
+
+  const AfterNavComponent = RenderServerComponent({
+    clientProps: {
+      documentSubViewType,
+      viewType,
+    },
+    Component: afterNav,
     importMap: payload.importMap,
     serverProps: {
       i18n,
@@ -351,8 +391,10 @@ export async function CustomNav(props: CustomNavProps): Promise<React.ReactEleme
       adminRoute={adminRoute}
       navPreferences={navPreferences}
       navConfig={navConfig}
+      beforeNav={BeforeNavComponent as React.ReactElement}
       beforeNavLinks={BeforeNavLinksComponent as React.ReactElement}
       afterNavLinks={AfterNavLinksComponent as React.ReactElement}
+      afterNav={AfterNavComponent as React.ReactElement}
       logoutComponent={LogoutComponent as React.ReactElement}
     />
   )
